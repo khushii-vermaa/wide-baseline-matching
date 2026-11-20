@@ -1,0 +1,53 @@
+# ---------------------------------------------------------------------------
+# Main configuration. `frozen: false` on purpose: run
+#   python -m wbm.sweep --split dev --freeze
+# to tune on the 200 dev pairs; that writes configs/frozen.yaml (frozen: true).
+# The 100 test pairs refuse to run with an unfrozen config (proposal 7.3).
+# ---------------------------------------------------------------------------
+frozen: false
+
+data_root: data/megadepth                                   # folder containing Undistorted_SfM/... (or test/...)
+scene_info_dir: data/megadepth_test_1500_scene_info         # *.npz from the LoFTR repo (assets/megadepth_test_1500_scene_info)
+cache_dir: cache
+pairs_file: pairs/pairs.json
+results_root: results
+
+seeds: [0, 1, 2]        # RANSAC seeds
+epi_thr: 5.0e-4         # epipolar precision threshold (squared Sampson distance, normalised coords)
+
+selection:
+  n_test: 100
+  n_dev: 200
+  n_tiers: 3
+  seed: 0               # tie-break seed for equal rotation angles
+
+# Equal-protocol arm (starting values; tuning on dev overwrites them in frozen.yaml)
+main:
+  resize: 1024
+  max_kp: 2048
+  ransac_thr: 1.0       # pixels
+
+tuning_grid:
+  resize: [640, 1024]
+  max_kp: [2048, 4096]
+  ransac_thr: [0.5, 1.0, 2.0]
+
+# Sensitivity arms on the test pairs (O6 / Arm E), run AFTER freezing
+sensitivity_grid:
+  resize: [640, 840, 1024, 1600]
+  max_kp: [1024, 2048, 4096]
+  ransac_thr: [0.5, 1.0, 2.0]
+
+# Published-protocol arm. VERIFY against the LoFTR and LightGlue papers/repos in
+# Phase 0 -- papers differ in resize, keypoints and RANSAC settings.
+protocols:
+  published:
+    loftr:      {resize: 840,  ransac_thr: 0.5}
+    splg:       {resize: 1600, max_kp: 2048, ransac_thr: 1.0}
+    sift_mnn:   {resize: 1600, max_kp: 2048, ransac_thr: 1.0}
+    sift_ratio: {resize: 1600, max_kp: 2048, ransac_thr: 1.0}
+
+# Published MegaDepth-1500 numbers for Table 2. FILL FROM THE PAPERS; leave null until checked.
+published_auc:
+  loftr: {auc5: null, auc10: null, auc20: null}
+  splg:  {auc5: null, auc10: null, auc20: null}

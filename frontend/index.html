@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Does the matcher with the most matches recover the pose?</title>
+<style>
+:root{--bg:#eef1f3;--panel:#fff;--ink:#101c26;--mute:#5b6b78;--line:#d3dbe0;--teal:#1f7a8c;--teal-ink:#fff;--bad:#c0392b;--good:#2f8f3f;--warn:#a87400}
+@media (prefers-color-scheme:dark){:root{--bg:#0e161d;--panel:#16212b;--ink:#e8eef2;--mute:#93a4b1;--line:#2a3945;--teal:#4fb3c6;--teal-ink:#07222a;--bad:#ff7b6b;--good:#6fcf7e;--warn:#e0b040}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:28px 20px 8px;max-width:1080px;margin:0 auto}
+h1{font:600 clamp(1.5rem,3.4vw,2.2rem)/1.2 Georgia,"Times New Roman",serif;margin:0 0 6px;letter-spacing:-.01em}
+header p{margin:0;color:var(--mute);max-width:70ch}
+nav{max-width:1080px;margin:18px auto 0;padding:0 20px;display:flex;gap:6px;border-bottom:1px solid var(--line)}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mute);font:inherit;padding:10px 14px;cursor:pointer}
+nav button[aria-selected=true]{color:var(--ink);border-color:var(--teal);font-weight:600}
+button:focus-visible,select:focus-visible,input:focus-visible,label:focus-within{outline:3px solid var(--teal);outline-offset:2px}
+main{max-width:1080px;margin:0 auto;padding:20px}
+section[hidden]{display:none}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.slots{grid-template-columns:1fr}}
+.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;border:2px dashed var(--line);border-radius:8px;cursor:pointer;color:var(--mute);text-align:center;padding:10px;overflow:hidden}
+.slot img{max-width:100%;max-height:260px;border-radius:4px}
+.slot input{position:absolute;opacity:0;width:1px;height:1px}
+.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:end;margin:16px 0}
+.controls label{display:flex;flex-direction:column;font-size:.85rem;color:var(--mute);gap:4px}
+select,input[type=number]{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);min-width:120px}
+.run{background:var(--teal);color:var(--teal-ink);border:0;border-radius:6px;padding:10px 22px;font-weight:600;font-size:1rem;font-family:inherit;cursor:pointer}
+.run:disabled{opacity:.5;cursor:not-allowed}
+.stats{display:flex;flex-wrap:wrap;gap:22px;margin:18px 0 10px}
+.stat b{display:block;font:600 1.6rem ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.stat span{color:var(--mute);font-size:.85rem}
+#viz{width:100%;border-radius:6px;display:block}
+.legend{font-size:.85rem;color:var(--mute);margin-top:8px}.g{color:var(--good)}.r{color:var(--bad)}
+.msg{color:var(--mute);margin:8px 0}.err{color:var(--bad)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.92rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+th{color:var(--mute);font-weight:600}.tw{overflow-x:auto}
+.banner{background:color-mix(in srgb,var(--warn) 18%,var(--panel));border:1px solid var(--warn);border-radius:6px;padding:10px 14px;margin-bottom:14px}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:14px}
+.figs img{width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
+h2{font:600 1.15rem Georgia,serif;margin:22px 0 8px}
+.sig{font-weight:600}.sig.y{color:var(--good)}.sig.n{color:var(--mute)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Does the matcher with the most matches also recover the camera pose?</h1>
+  <p>Compare SIFT, SuperPoint + LightGlue and LoFTR on your own image pair, or read the benchmark on 100 wide-baseline MegaDepth pairs.</p>
+</header>
+<nav role="tablist">
+  <button role="tab" id="t-demo" aria-selected="true" aria-controls="demo">Try a pair</button>
+  <button role="tab" id="t-bench" aria-selected="false" aria-controls="bench">Benchmark results</button>
+</nav>
+<main>
+<section id="demo" role="tabpanel" aria-labelledby="t-demo">
+  <div class="panel">
+    <div class="slots">
+      <label class="slot" id="s0"><input type="file" accept="image/*" id="f0">Choose first image</label>
+      <label class="slot" id="s1"><input type="file" accept="image/*" id="f1">Choose second image</label>
+    </div>
+    <div class="controls">
+      <label>Matcher<select id="matcher"></select></label>
+      <label>Resize (long side, px)<input type="number" id="resize" value="640" min="256" max="1600" step="64"></label>
+      <label>Max keypoints<input type="number" id="maxkp" value="2048" min="256" max="8192" step="256"></label>
+      <label>RANSAC threshold (px)<input type="number" id="thr" value="1.0" min="0.2" max="5" step="0.1"></label>
+      <label>Focal length (px, optional)<input type="number" id="focal" placeholder="auto" min="0"></label>
+      <button class="run" id="run" disabled>Match images</button>
+    </div>
+    <div id="out" aria-live="polite"></div>
+  </div>
+</section>
+<section id="bench" role="tabpanel" aria-labelledby="t-bench" hidden>
+  <div class="panel" id="benchbody">Loading…</div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(x,d=3)=>x==null||isNaN(x)?'–':Number(x).toFixed(d);
+// ---- tabs
+for(const [t,p] of [['t-demo','demo'],['t-bench','bench']]) $(t).onclick=()=>{
+  for(const [a,b] of [['t-demo','demo'],['t-bench','bench']]){ $(a).setAttribute('aria-selected',a===t); $(b).hidden=b!==p; }
+  if(p==='bench') loadBench();
+};
+// ---- demo
+const files=[null,null];
+for(const i of [0,1]) $('f'+i).onchange=e=>{
+  const f=e.target.files[0]; if(!f) return; files[i]=f;
+  $('s'+i).innerHTML=''; const im=new Image(); im.src=URL.createObjectURL(f); im.alt='Image '+(i+1)+' preview'; $('s'+i).append(im);
+  $('run').disabled=!(files[0]&&files[1]);
+};
+fetch('/api/matchers').then(r=>r.json()).then(ms=>{
+  $('matcher').innerHTML=ms.map(m=>`<option value="${m.id}" ${m.available?'':'disabled'}>${m.label}${m.available?'':' (not installed)'}</option>`).join('');
+});
+$('run').onclick=async()=>{
+  const out=$('out'); $('run').disabled=true; out.innerHTML='<p class="msg">Matching… the first run of a learned model downloads its weights and can take a minute.</p>';
+  const fd=new FormData(); fd.append('img0',files[0]); fd.append('img1',files[1]);
+  fd.append('matcher',$('matcher').value); fd.append('resize',$('resize').value); fd.append('max_kp',$('maxkp').value);
+  fd.append('ransac_thr',$('thr').value); fd.append('focal',$('focal').value||0);
+  try{
+    const r=await fetch('/api/match',{method:'POST',body:fd}); const j=await r.json();
+    if(!r.ok) throw new Error(j.detail||'Request failed');
+    const pose=j.pose?`<div class="stat"><b>${fmt(j.pose.rotation_deg,1)}°</b><span>estimated rotation between cameras</span></div>`:'';
+    out.innerHTML=`<div class="stats">
+      <div class="stat"><b>${j.n_matches}</b><span>matches</span></div>
+      <div class="stat"><b>${j.n_inliers}</b><span>inliers after RANSAC</span></div>
+      <div class="stat"><b>${j.inlier_ratio==null?'–':(100*j.inlier_ratio).toFixed(0)+'%'}</b><span>inlier ratio</span></div>${pose}
+      <div class="stat"><b>${fmt(j.time_s,2)} s</b><span>${j.matcher}</span></div></div>
+      <p class="msg">${j.message}</p>${j.image?`<img id="viz" src="${j.image}" alt="Matches between the two images">`:''}
+      <p class="legend"><span class="g">Green</span> lines agree with the estimated camera geometry; <span class="r">red</span> lines do not. A high match count with mostly red lines means the pose is unreliable.</p>`;
+  }catch(e){ out.innerHTML=`<p class="err">${e.message}</p>`; }
+  $('run').disabled=false;
+};
+// ---- benchmark
+let loaded=false;
+async function loadBench(){
+  if(loaded) return; const body=$('benchbody');
+  const j=await (await fetch('/api/results')).json();
+  if(!j.available){ body.innerHTML='<p>No benchmark results yet. Run the experiments (see README, step 6) and refresh this page.</p>'; return; }
+  loaded=true;
+  const rows=j.table1.map(r=>`<tr><td>${r.matcher}</td>
+    <td>${fmt(r['AUC@5'])} <small>[${fmt(r['AUC@5_lo'],2)}, ${fmt(r['AUC@5_hi'],2)}]</small></td>
+    <td>${fmt(r['AUC@10'])} <small>[${fmt(r['AUC@10_lo'],2)}, ${fmt(r['AUC@10_hi'],2)}]</small></td>
+    <td>${fmt(r['AUC@20'])}</td><td>${fmt(r.median_err,1)}°</td><td>${fmt(100*r.success_rate,0)}%</td>
+    <td>${fmt(r.mean_matches,0)}</td><td>${fmt(r.inlier_ratio,2)}</td><td>${fmt(r.epi_precision,2)}</td></tr>`).join('');
+  const diffs=j.paired_differences.filter(d=>d.tau===10).map(d=>`<tr><td>${d.a} − ${d.b}</td><td>${fmt(d.diff)}</td><td>[${fmt(d.lo,3)}, ${fmt(d.hi,3)}]</td>
+    <td class="sig ${d.significant?'y':'n'}">${d.significant?'real difference':'inside the interval'}</td></tr>`).join('');
+  const rk=j.ranks.overall, nm=m=>Object.entries(rk[m].ranks).sort((a,b)=>a[1]-b[1]).map(e=>e[0]).join(' > ');
+  const auc=Object.entries(rk.auc_ranks).sort((a,b)=>a[1]-b[1]).map(e=>e[0]).join(' > ');
+  body.innerHTML=`${j.synthetic?'<div class="banner"><b>Synthetic demo data.</b> These numbers are made up to test the page. Do not report them.</div>':''}
+    <p>${j.n_pairs} test pairs chosen by ground-truth rotation only. Resize ${j.settings.resize}px, ${j.settings.max_kp} keypoints, RANSAC ${j.settings.ransac_thr}px. Brackets are 95% paired-bootstrap intervals.</p>
+    <h2>Pose accuracy</h2><div class="tw"><table><thead><tr><th>Matcher</th><th>AUC@5°</th><th>AUC@10°</th><th>AUC@20°</th><th>Median error</th><th>Success &lt;10°</th><th>Mean matches</th><th>Inlier ratio</th><th>Epipolar precision</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <h2>Do match counts predict pose?</h2>
+    <p>Ranking by mean match count: <b>${nm('matches')}</b><br>Ranking by mean inlier count: <b>${nm('inliers')}</b><br>Ranking by AUC@10: <b>${auc}</b><br>
+    Match-count ranking ${rk.matches.agrees_with_auc?'agrees':'does not agree'} with the pose ranking overall.</p>
+    <h2>Which differences are real? (AUC@10)</h2><div class="tw"><table><thead><tr><th>Pair</th><th>Difference</th><th>95% interval</th><th></th></tr></thead><tbody>${diffs}</tbody></table></div>
+    <div class="figs">${j.figures.map(f=>`<a href="/results-files/figures/${f}"><img loading="lazy" src="/results-files/figures/${f}" alt="${f.replace(/_/g,' ').replace('.png','')}"></a>`).join('')}</div>`;
+}
+</script>
+</body>
+</html>

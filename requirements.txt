@@ -1,0 +1,15 @@
+# Install PyTorch first (see README) — then:
+numpy
+scipy
+pandas
+matplotlib
+pyyaml
+tqdm
+pytest
+opencv-python-headless
+pillow
+kornia>=0.7.3
+fastapi
+uvicorn[standard]
+python-multipart
+git+https://github.com/cvg/LightGlue.git

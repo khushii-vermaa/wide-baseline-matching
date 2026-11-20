@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wbm"
+version = "1.0.0"
+description = "Wide-baseline matching benchmark: SIFT+MNN vs SuperPoint+LightGlue vs LoFTR (pose AUC on MegaDepth-1500)"
+requires-python = ">=3.9"
+
+[tool.setuptools.packages.find]
+where = ["src"]

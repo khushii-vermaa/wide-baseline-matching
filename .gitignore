@@ -1,0 +1,8 @@
+data/
+cache/
+__pycache__/
+*.egg-info/
+.venv/
+results_demo/
+results/*/*/*/matches/
+logs/
