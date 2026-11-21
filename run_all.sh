@@ -29,4 +29,8 @@ python -m wbm.qualitative --config configs/frozen.yaml
 echo "== Phase 4 (stretch, drop first if short on time): in-plane rotation sweep =="
 python -m wbm.rotation_sweep --config configs/frozen.yaml || true
 
+echo "== Report: fill tables/findings from your results, then compile =="
+python -m wbm.report
+(cd report && latexmk -pdf main.tex) || echo "latexmk missing: upload report/ to Overleaf instead"
+
 echo "Done. Open results/summary.json, results/tables/, results/figures/ or start the web app (README step 7)."

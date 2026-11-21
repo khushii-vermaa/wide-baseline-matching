@@ -1,0 +1,140 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+% ---------------------------------------------------------------------------
+% UCS532 report. Layout approximates CVPR two-column format so it compiles anywhere.
+% For the OFFICIAL template: download the CVPR author kit (cvpr.sty, ieee_fullname.bst) from the CVPR
+% website, put them in this folder, replace the \documentclass/geometry lines with the kit's preamble
+% (\usepackage[review]{cvpr}), and keep everything from "\begin{document}" on.
+% ---------------------------------------------------------------------------
+\usepackage[top=1in,bottom=1in,left=0.875in,right=0.875in,columnsep=0.3125in]{geometry}
+\usepackage{mathptmx}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx,amsmath,amssymb,booktabs,xcolor,caption,url}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parskip}{0pt}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}} % redefine as {} for the final version
+\newcommand{\figorbox}[1]{\IfFileExists{figures/#1}{\includegraphics[width=\linewidth]{figures/#1}}%
+ {\fbox{\parbox{0.92\linewidth}{\centering\small\vspace{1.2cm}\texttt{\detokenize{#1}} appears after the experiments are run\vspace{1.2cm}}}}}
+\input{generated/macros}
+
+\title{Does the Matcher with the Most Matches Also Recover the Camera Pose?\\
+A Pose-First Comparison of SIFT+MNN, SuperPoint+LightGlue and LoFTR\\ under Extreme Viewpoint Change}
+\author{Khushi Verma (1024170065) \quad Kashish Kannojia (1024170342)\\
+CS-UCS532 Computer Vision, Sessional Open Challenge 2026 (Project P20)}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Papers and demos usually report match counts, inlier counts or match precision. None of these says whether the camera geometry was recovered. We compare three generations of local feature matching, hand-crafted SIFT with mutual-nearest-neighbour matching, SuperPoint with LightGlue, and the detector-free LoFTR, by the quantity a downstream system needs: relative camera pose, scored against MegaDepth ground truth. The $\nTest$ test pairs are the pairs with the largest ground-truth relative rotation in MegaDepth-1500, selected before any matcher was run; all matchers share one resize, one keypoint budget and one RANSAC pose stage, tuned on a disjoint dev set and frozen. We report pose AUC@5$^\circ$/10$^\circ$ with paired-bootstrap intervals, test whether match-count rankings agree with pose rankings, and analyse where the matchers diverge by difficulty tier. \abstractfindings{} All claims are limited to wide-baseline outdoor landmark photography.
+\end{abstract}
+
+\section{Introduction}
+Matching local features between two images of one scene is the first step of structure-from-motion, visual localisation and SLAM. Three generations of matchers now coexist: SIFT~\cite{lowe2004} with mutual nearest neighbour (MNN) matching, learned sparse features such as SuperPoint~\cite{detone2018} matched by attention networks (SuperGlue~\cite{sarlin2020}, LightGlue~\cite{lindenberger2023}), and detector-free dense matching such as LoFTR~\cite{sun2021}. On easy pairs they all work. They disagree most when the viewpoint changes wildly, because perspective distortion, scale change, occlusion and lighting change the appearance of every patch. This is the regime of the Image Matching Challenge~\cite{jin2021}, and the regime studied here.
+
+\paragraph{The problem with counting matches.} A matcher can return thousands of mutually consistent matches that lie on a repeated facade or a single plane and still give a wrong relative pose. Published MegaDepth-1500 numbers are averages over pairs of mixed difficulty and differ across papers in image resolution, keypoint budget and RANSAC settings, so they are not directly comparable; an average over easy pairs hides where matchers diverge. Jin et al.~\cite{jin2021} argued for scoring matchers by pose accuracy for exactly this reason.
+
+\paragraph{Research question.} On wide-baseline MegaDepth pairs, how do SIFT+MNN, SuperPoint+LightGlue and LoFTR rank by relative-pose accuracy, and does that ranking agree with the ranking implied by match counts?
+
+\paragraph{Contributions.} (C1) Pose AUC@5$^\circ$ and @10$^\circ$ for the three matchers on $\nTest$ geometry-selected wide-baseline pairs, with confidence intervals. (C2) A test of whether match-count rankings agree with pose-accuracy rankings, overall and per difficulty tier. (C3) A difficulty-stratified analysis with disagreement and complementarity between classical and learned matchers. (C4) A qualitative panel of the hardest pairs chosen by a pre-declared rule. (C5) A reproducible harness with negative controls and a single-command pipeline. The novelty is in the evaluation design, not in a new matcher: all methods are used as released.
+
+\section{Related Work}
+\paragraph{Local features and matchers.} SIFT~\cite{lowe2004} detects scale-space extrema and describes them with gradient histograms; it is invariant to scale and in-plane rotation by construction. SuperPoint~\cite{detone2018} is a self-supervised fully-convolutional detector and descriptor. SuperGlue~\cite{sarlin2020} and LightGlue~\cite{lindenberger2023} match sparse features with attention; LightGlue adapts its depth and prunes points for speed. LoFTR~\cite{sun2021} skips detection and matches dense coarse features with transformers, refining at fine resolution, which helps in low-texture regions.
+\paragraph{Evaluation.} The Image Matching Challenge~\cite{jin2021} scores matchers through downstream pose and reconstruction quality. LoFTR and LightGlue report pose AUC on the MegaDepth-1500 split~\cite{li2018}. We build on that protocol but fix the settings shared by all matchers and select hard pairs from geometry alone.
+\paragraph{Pose estimation.} Relative pose from known intrinsics uses the essential matrix~\cite{hartley2003} with the five-point solver~\cite{nister2004} inside RANSAC~\cite{fischler1981}.
+
+\section{Benchmark and Pair Selection}
+\paragraph{Data.} MegaDepth~\cite{li2018} provides internet photo collections of landmarks with structure-from-motion poses (COLMAP~\cite{schonberger2016}) and intrinsics. The MegaDepth-1500 evaluation set has 1{,}500 pairs with ground-truth relative pose, drawn from a small number of scenes. The loader assumes world-to-camera poses, so $T_{0\to1}=T_1T_0^{-1}$; this was confirmed in Phase~0 (\todo{confirm: number of scenes and pairs reported by \texttt{python -m wbm.data --inspect}}).
+\paragraph{Geometry-only selection.} For all 1{,}500 pairs we compute the ground-truth relative rotation angle. The test set is the 100 pairs with the largest angle (ties broken by a fixed seed). From the remainder, the dev set is the next 200 pairs by the same rule. The test pairs are split into three equal difficulty tiers by rotation angle (tier 1 smallest, tier 3 largest). Selection uses no matcher output, so it cannot favour the matcher used to pick pairs. The selection script and pair list were committed before any matcher was run (\todo{state whether the rule had to be relaxed; if so, when and why}). Fig.~\ref{fig:sel} shows the rotation distribution.
+\begin{figure}[t]\centering\figorbox{fig1_pair_selection.png}\caption{Ground-truth rotation of all 1{,}500 pairs with the test (top 100) and dev thresholds.}\label{fig:sel}\end{figure}
+
+\section{Methods}
+\subsection{Matchers}
+All three are used as released, with versions pinned (Table~\ref{tab:env}).
+\textbf{SIFT+MNN:} OpenCV SIFT~\cite{bradski2000} with a cap on keypoints; descriptors matched by mutual nearest neighbour (cross-checked brute force, L2). A ratio-test variant (ratio 0.8) is an ablation. \textbf{SuperPoint+LightGlue:} SuperPoint keypoints with a cap, matched by LightGlue with SuperPoint weights. \textbf{LoFTR:} Kornia~\cite{riba2020} implementation with outdoor weights; dense, so it has no keypoint budget and uses the published confidence threshold. All matchers return pixel coordinates in the original image frame, so ground-truth intrinsics need no rescaling.
+\subsection{Equal-protocol comparison}
+One long-side resize, one keypoint cap (SIFT and SuperPoint) and one RANSAC threshold are shared by all matchers. They are chosen on the 200 dev pairs by maximising mean AUC@10 over matchers (grid: resize $\in\{640,1024\}$, keypoints $\in\{2048,4096\}$, threshold $\in\{0.5,1,2\}$\,px) and then frozen in a version-controlled configuration before any test pair is run. The frozen values are resize \rsz\,px, \mkp{} keypoints and threshold \rthr\,px. Each matcher's published settings run as a sensitivity arm. Match counts are reported but never compared across paradigms as if equal, because dense and sparse matchers count different things.
+\subsection{Pose estimation}
+With normalised coordinates $\mathbf{x}_i,\mathbf{x}'_i$, matches satisfy $\mathbf{x}'^{\top}_i E\,\mathbf{x}_i=0$ with $E=[\mathbf{t}]_\times R$. We estimate $E$ with OpenCV's five-point solver inside RANSAC (threshold divided by the mean focal length), then recover $(R,\mathbf{t})$ by the cheirality check. The same stage, with three fixed seeds that also permute match order, serves every matcher. A pair with no valid pose gets infinite error.
+\subsection{Metrics}
+With estimated $R,\mathbf{t}$ and ground truth $R^*,\mathbf{t}^*$ the pose error is
+\begin{equation}
+e=\max(\epsilon_R,\epsilon_t),\;\; \epsilon_R=\arccos\tfrac{\operatorname{tr}(R^{*\top}R)-1}{2},\;\; \epsilon_t=\arccos|\hat{\mathbf t}\!\cdot\!\hat{\mathbf t}^*|.
+\end{equation}
+Translation is known only up to scale and sign. With $\mathrm{recall}(x)$ the fraction of pairs with $e\le x$,
+\begin{equation}
+\mathrm{AUC}(\tau)=\tfrac1\tau\!\int_0^\tau \mathrm{recall}(x)\,dx,\;\; \tau\in\{5^\circ,10^\circ\}\ (20^\circ\text{ secondary}).
+\end{equation}
+The integral uses the trapezoid rule over the sorted errors, as in the LoFTR and LightGlue evaluations, so values are comparable with published tables. We report the mean over the three RANSAC seeds. \emph{Epipolar precision} is the fraction of matches whose squared Sampson distance~\cite{hartley2003} under the ground-truth geometry, in normalised coordinates, is below $5\times10^{-4}$. The \emph{disagreement rate} between matchers $a,b$ in a tier is
+\begin{equation}
+D_{ab}=\big|\{\text{pairs}:[e_a<10^\circ]\neq[e_b<10^\circ]\}\big|\,/\,|\text{pairs in tier}|,
+\end{equation}
+where $e$ is the median over seeds. \emph{Success} means $e<10^\circ$.
+\subsection{Statistics}
+With 100 pairs, differences of a few AUC points often fall inside the confidence interval. We use the percentile bootstrap~\cite{efron1979} over pairs (1{,}000 resamples), with the same resampled pairs for all matchers so that differences are paired. A difference is called real only if its 95\% interval excludes zero.
+
+\section{Experimental Setup}
+\paragraph{Splits and discipline.} There is no training. Leakage control means keeping tuning away from the test pairs: resize, keypoint cap, RANSAC threshold and the epipolar threshold are fixed on the dev pairs. The 1{,}500-pair reproduction is a harness check, not used to choose any setting.
+\paragraph{Arms.} A: matchers ranked by match count, inlier count and epipolar precision. B: same matchers and pairs, ranked by AUC. C: A versus B overall and per tier, and per-pair inlier ratio versus pose success. D: AUC and $D_{ab}$ per tier, pairs solved by exactly one matcher, best-of-three oracle. E: SIFT MNN versus ratio test, resize, keypoint cap, RANSAC threshold. F (stretch): in-plane rotation of one image by $0,45,90,135,180^\circ$ with the ground-truth pose updated.
+\paragraph{Negative controls.} Built before results: unit tests of pose error and AUC against hand-computed values; a random-match baseline, which must give AUC near zero; pair-order symmetry, where matching $(A,B)$ and $(B,A)$ must give consistent errors; and a zero-baseline sanity check on small-rotation pairs where learned matchers must succeed. Outputs: \todo{random-match AUC@10 = ?; median $|e_{AB}-e_{BA}|$ = ?$^\circ$; zero-baseline errors = ? (copy from \texttt{python -m wbm.controls})}.
+\paragraph{Environment.}
+\begin{table}[t]\centering\small
+\begin{tabular}{ll}\toprule Item & Value\\\midrule
+Python / PyTorch & \todo{versions}\\ Kornia / LightGlue (commit) & \todo{versions}\\ OpenCV & \todo{version}\\ Hardware & \todo{GPU or Colab}\\ Seeds & 0, 1, 2\\ \bottomrule\end{tabular}
+\caption{Pinned environment.}\label{tab:env}\end{table}
+
+\section{Results}
+\subsection{Harness validation}
+Table~\ref{tab:repro} compares our 1{,}500-pair pose AUC under each matcher's published protocol with the published values (\todo{state the tolerance and whether reproduction passed; if not, what was checked: resize, keypoint budget, RANSAC threshold, pair list, pose convention}).
+\begin{table}[t]\centering\small\input{generated/table_repro}\caption{Reproduction of published MegaDepth-1500 pose AUC.}\label{tab:repro}\end{table}
+\subsection{Main result}
+\begin{table*}[t]\centering\footnotesize\input{generated/table_main}
+\caption{Main table on the \nTest{} test pairs (equal protocol: resize \rsz, \mkp{} keypoints, RANSAC \rthr\,px). AUC with 95\% paired-bootstrap interval; ``Matches'' and ``Inl.\ ratio'' are diagnostics, not comparable across paradigms.}\label{tab:main}\end{table*}
+\begin{figure}[t]\centering\figorbox{fig2_pose_error_cdf.png}\caption{Pose-error CDF per matcher; the area under each curve up to the cut-off is the AUC.}\label{fig:cdf}\end{figure}
+\input{generated/findings}
+\begin{table}[t]\centering\footnotesize\input{generated/table_diffs}\caption{Paired AUC differences with 95\% bootstrap intervals; * marks intervals excluding zero.}\label{tab:diff}\end{table}
+\subsection{Counts versus pose}
+\begin{figure*}[t]\centering\figorbox{fig4_counts_vs_pose.png}\caption{Left, middle: mean match count and AUC@10 per matcher. Right: per-pair inlier ratio against pose error.}\label{fig:counts}\end{figure*}
+\subsection{Difficulty tiers, disagreement and complementarity}
+\begin{table*}[t]\centering\footnotesize\input{generated/table_tiers}\caption{AUC@10 by tier with intervals, and disagreement $D_{ab}$ (S = SIFT+MNN, L = SP+LG, F = LoFTR).}\label{tab:tiers}\end{table*}
+\begin{figure}[t]\centering\figorbox{fig3_auc_by_tier.png}\caption{AUC@10 per tier with confidence bands.}\label{fig:tier}\end{figure}
+\begin{figure}[t]\centering\figorbox{fig5_complementarity.png}\caption{Pairs solved by none/one/two/all matchers and disagreement rate per tier.}\label{fig:comp}\end{figure}
+\subsection{Sensitivity: matcher or protocol?}
+Table~\ref{tab:sens} gives AUC@10 averaged over the other settings; Table~\ref{tab:ratio} compares MNN with the ratio test. \todo{State how much of any gap between matchers is changed by the protocol, and whether any ranking flips.}
+\begin{table}[t]\centering\footnotesize\input{generated/table_sens}\caption{Sensitivity of AUC@10 to resize, keypoint cap and RANSAC threshold (test pairs, after freezing).}\label{tab:sens}\end{table}
+\begin{table}[t]\centering\footnotesize\input{generated/table_ratio}\caption{SIFT: mutual nearest neighbour versus ratio test.}\label{tab:ratio}\end{table}
+\subsection{Qualitative panel}
+Fig.~\ref{fig:qual} shows hardest pairs chosen by a pre-declared rule: the four largest-rotation test pairs and four pairs where the matchers disagree (ordered by pair id). Matches are green if epipolar-consistent under the ground truth and red otherwise. \todo{Insert one or two panels from the \texttt{fig6} files in \texttt{figures/} and group the failures by cause: repeated structure, extreme scale change, occlusion or illumination, too few matches.}
+\begin{figure*}[t]\centering\figorbox{fig6_hardest_PAIRID.png}\caption{Qualitative panel (replace the file name with a generated panel).}\label{fig:qual}\end{figure*}
+\subsection{Stretch: in-plane rotation (Arm F)}
+\todo{Include only if the sweep was run; otherwise delete this subsection and Table~\ref{tab:rot}.}
+\begin{table}[t]\centering\footnotesize\input{generated/table_rotation}\caption{AUC@10 when image 2 is rotated in-plane with the ground-truth pose updated.}\label{tab:rot}\end{table}
+
+\section{Discussion}
+\label{sec:expect}
+\paragraph{Pre-declared expectations.} Stated before any result: (1) SIFT+MNN has the lowest AUC@10 of the three. (2) The count ranking differs from the AUC ranking in at least one tier, with a dense matcher with many matches the likeliest case. (3) $D_{ab}$ rises from the easiest to the hardest tier. (4) The order of the two learned matchers is uncertain, and a difference is claimed only if the paired interval excludes zero. The generated paragraph in Section~6 reports whether each held; where one failed, that is the finding.
+\paragraph{Why counts can mislead.} \todo{Use Fig.~\ref{fig:counts} and the qualitative panel to say whether high inlier counts coexisted with large pose errors, and which scenes or structures (planes, repeated facades) were involved. Report only what the figures show.}
+\paragraph{Where the matchers diverge.} \todo{Summarise the tier analysis and the best-of-three oracle: are the matchers complementary or do they fail on the same pairs?}
+\paragraph{Threats to validity.} The learned matchers saw MegaDepth scenes in training, which favours them over SIFT. Ground-truth poses come from structure-from-motion, not a metrology rig, so errors near $1^\circ$ are below the reliability of the labels and are not over-interpreted. If the two learned matchers are not separated by the paired interval, this benchmark cannot separate them at $n=100$.
+
+\section{Limitations}
+Only 100 test pairs from a few landmark scenes: conclusions apply to wide-baseline outdoor landmark photography, not indoor, night or aerial imagery. Ground-truth poses carry structure-from-motion error. The learned matchers were trained on MegaDepth scenes. Three off-the-shelf matchers were used as released; none was proposed or retrained. Pose AUC is one downstream task and does not cover localisation or reconstruction quality directly. Rotating images in place (Arm F) crops corners and assumes the principal point is near the image centre.
+
+\section{Conclusion}
+\todo{Three to four sentences answering the research question with the numbers from Table~\ref{tab:main} and the paired intervals, followed by the main caveat.}
+
+\section*{Reproducibility}
+The repository contains the pair-selection script and pair lists, frozen configurations, matcher wrappers with pinned versions, pose and AUC code with unit tests, result tables, figure scripts and a README. \texttt{run\_all.sh} regenerates every table and figure from a clean checkout; \texttt{python -m wbm.report} regenerates this report's tables and findings from \texttt{results/summary.json}. \todo{Repository URL.}
+
+\section*{Contribution statement}
+\todo{Who did what: pair selection and harness, matcher wrappers, experiments, analysis, web demo, report.}
+
+\section*{AI-assistance declaration}
+\todo{Declare the AI assistance used, as the challenge requires (for example: AI assistance was used to draft code and report text; all reported values come from experiments run by the authors).}
+
+{\small
+\bibliographystyle{unsrt}
+\bibliography{refs}
+}
+\end{document}
