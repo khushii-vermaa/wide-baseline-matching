@@ -27,9 +27,13 @@ main:
   max_kp: 2048
   ransac_thr: 1.0       # pixels
 
+# tuning_grid:
+#   resize: [640, 1024]
+#   max_kp: [2048, 4096]
+#   ransac_thr: [0.5, 1.0, 2.0]
 tuning_grid:
   resize: [640, 1024]
-  max_kp: [2048, 4096]
+  max_kp: [2048]
   ransac_thr: [0.5, 1.0, 2.0]
 
 # Sensitivity arms on the test pairs (O6 / Arm E), run AFTER freezing

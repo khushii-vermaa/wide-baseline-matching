@@ -1,0 +1,71 @@
+frozen: true
+data_root: data/megadepth
+scene_info_dir: data/megadepth_test_1500_scene_info
+cache_dir: cache
+pairs_file: pairs/pairs.json
+results_root: results
+seeds:
+- 0
+- 1
+- 2
+epi_thr: 0.0005
+selection:
+  n_test: 100
+  n_dev: 200
+  n_tiers: 3
+  seed: 0
+main:
+  resize: 1024
+  max_kp: 2048
+  ransac_thr: 0.5
+tuning_grid:
+  resize:
+  - 640
+  - 1024
+  max_kp:
+  - 2048
+  ransac_thr:
+  - 0.5
+  - 1.0
+  - 2.0
+sensitivity_grid:
+  resize:
+  - 640
+  - 840
+  - 1024
+  - 1600
+  max_kp:
+  - 1024
+  - 2048
+  - 4096
+  ransac_thr:
+  - 0.5
+  - 1.0
+  - 2.0
+protocols:
+  published:
+    loftr:
+      resize: 840
+      ransac_thr: 0.5
+    splg:
+      resize: 1600
+      max_kp: 2048
+      ransac_thr: 1.0
+    sift_mnn:
+      resize: 1600
+      max_kp: 2048
+      ransac_thr: 1.0
+    sift_ratio:
+      resize: 1600
+      max_kp: 2048
+      ransac_thr: 1.0
+published_auc:
+  loftr:
+    auc5: null
+    auc10: null
+    auc20: null
+  splg:
+    auc5: null
+    auc10: null
+    auc20: null
+tuned_on: dev split; mean AUC@10 over matchers = 0.5335
