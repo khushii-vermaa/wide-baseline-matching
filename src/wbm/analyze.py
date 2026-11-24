@@ -113,6 +113,22 @@ def main():
                    **{f"only_{m}": int((succ[m][mk] & (k == 1)).sum()) for m in MAIN})
         tiers.append(row)
     pd.DataFrame(tiers).to_csv(tab_dir / "tiers.csv", index=False)
+
+    # ---------- per-landmark (section 7.5 ii) and per-seed (7.5 iii) ----------
+    lm = np.array([pairs["scene"][i][:4] for i in ids])     # '0015_0.1_0.3' -> landmark '0015'
+    scenes = []
+    for sc in sorted(set(lm)):
+        mk = lm == sc
+        row = dict(scene=sc, n=int(mk.sum()))
+        sb = bootstrap({m: errs[m][mk] for m in MAIN}, (5, 10), B=500, seed=11)
+        for m in MAIN:
+            for t in (5, 10):
+                row[f"auc{t}_{m}"] = auc_seeds(errs[m][mk], t)
+                row[f"auc{t}_{m}_lo"], row[f"auc{t}_{m}_hi"] = ci(sb[(m, t)])
+        scenes.append(row)
+    pd.DataFrame(scenes).to_csv(tab_dir / "per_landmark.csv", index=False)
+    per_seed = {m: {f"auc{t}": [auc(errs[m][:, k], t) for k in range(S)] for t in (5, 10)} for m in MAIN}
+    pd.DataFrame([dict(matcher=m, seed=k, auc5=per_seed[m]["auc5"][k], auc10=per_seed[m]["auc10"][k]) for m in MAIN for k in range(S)]).to_csv(tab_dir / "per_seed.csv", index=False)
     best_err = np.min(np.stack([errs[m] for m in MAIN]), axis=0)
     best_of_three = {f"AUC@{t}": auc_seeds(best_err, t) for t in (5, 10, 20)}
 
@@ -164,7 +180,7 @@ def main():
         generated=datetime.now(timezone.utc).isoformat(), synthetic=bool(a.synthetic), protocol=a.protocol,
         n_pairs=len(ids), settings=cfg["main"], table1=T1.drop(columns=["key"]).to_dict("records"),
         paired_differences=diffs, ranks=ranks, inlier_ratio_vs_pose_spearman={LABELS[k]: v for k, v in corr.items()},
-        tiers=tiers, best_of_three=best_of_three,
+        tiers=tiers, best_of_three=best_of_three, scenes=scenes, per_seed=per_seed, seeds=list(cfg["seeds"]),
         figures=sorted(p.name for p in fig_dir.glob("*.png")),
         expectations_note="Pre-declared expectations (proposal 7.2) must be checked against these numbers; if one fails, report it as the finding.",
     )

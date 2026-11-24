@@ -63,6 +63,8 @@ def placeholders(gen):
     write(gen / "table_sens.tex", tabular(["Setting"] + [SHORT[m] for m in MAIN], [[TBD] + [TBD] * 3]))
     write(gen / "table_ratio.tex", tabular(["Variant", "AUC@5", "AUC@10", "AUC@20"], [["SIFT+MNN", TBD, TBD, TBD], ["SIFT+ratio", TBD, TBD, TBD]]))
     write(gen / "table_rotation.tex", tabular(["Angle"] + [SHORT[m] for m in MAIN], [[TBD] + [TBD] * 3]))
+    write(gen / "table_scene.tex", tabular(["Landmark", "$n$"] + [SHORT[m] for m in MAIN], [[TBD, TBD] + [TBD] * 3]))
+    write(gen / "table_seed.tex", tabular(["Matcher", "Seed 0", "Seed 1", "Seed 2"], [[SHORT[m]] + [TBD] * 3 for m in MAIN]))
     write(gen / "findings.tex", "\\todo{Run the experiments, then \\texttt{python -m wbm.report}; this section is generated from \\texttt{results/summary.json}.}\n")
 
 
@@ -134,6 +136,22 @@ def findings(S):
     return "\n\n".join(out) + "\n"
 
 
+def scene_findings(S):
+    T = {INV[r["matcher"]]: r for r in S["table1"]}
+    overall = order({m: T[m]["AUC@10"] for m in MAIN})
+    parts, rev = [], []
+    for sc in S["scenes"]:
+        o = order({m: sc[f"auc10_{m}"] for m in MAIN})
+        parts.append(f"landmark {sc['scene']} ($n={sc['n']}$): " + " $>$ ".join(SHORT[m] for m in o))
+        if o != overall:
+            rev.append(sc["scene"])
+    ps = S["per_seed"]
+    spread = max(max(ps[m]["auc10"]) - min(ps[m]["auc10"]) for m in MAIN)
+    return ("\\paragraph{Per landmark and per seed.} AUC@10 ranking by landmark: %s. %s Across the %d RANSAC seeds the largest spread in AUC@10 for any matcher is %s."
+            % ("; ".join(parts), ("The ranking differs from the overall ranking for landmark %s; this is stated, not averaged away." % ", ".join(rev)) if rev
+               else "The ranking is the same in every landmark.", len(S["seeds"]), n(spread, 3))) + "\n"
+
+
 def abstract(S):
     T = {INV[r["matcher"]]: r for r in S["table1"]}
     o10 = order({m: T[m]["AUC@10"] for m in MAIN})
@@ -165,7 +183,15 @@ def make(S, root, cfg, gen):
         rows.append([str(t["tier"]), f"{t['rot_min']:.0f}--{t['rot_max']:.0f}"] + [ci_str(t[f"auc10_{m}"], t[f"auc10_{m}_lo"], t[f"auc10_{m}_hi"], 2) for m in MAIN]
                     + [n(t["D_sift_mnn_splg"], 2), n(t["D_sift_mnn_loftr"], 2), n(t["D_splg_loftr"], 2)])
     write(gen / "table_tiers.tex", tabular(["Tier", "Rot. ($^\\circ$)"] + [SHORT[m] for m in MAIN] + ["$D$ S/L", "$D$ S/F", "$D$ L/F"], rows))
-    write(gen / "findings.tex", findings(S))
+    rows = []
+    for sc in S["scenes"]:
+        rows.append([sc["scene"], str(sc["n"])] + [ci_str(sc[f"auc10_{m}"], sc[f"auc10_{m}_lo"], sc[f"auc10_{m}_hi"], 2) for m in MAIN])
+    write(gen / "table_scene.tex", tabular(["Landmark", "$n$"] + [SHORT[m] + " AUC@10" for m in MAIN], rows))
+    ps = S["per_seed"]
+    ns = len(S["seeds"])
+    rows = [[SHORT[m]] + [f"{n(ps[m]['auc5'][k])} / {n(ps[m]['auc10'][k])}" for k in range(ns)] for m in MAIN]
+    write(gen / "table_seed.tex", tabular(["Matcher (AUC@5 / AUC@10)"] + [f"Seed {k}" for k in S["seeds"]], rows))
+    write(gen / "findings.tex", findings(S) + scene_findings(S))
     pub = cfg.get("published_auc", {})
     pairs = json.load(open(root / "pairs.json")) if (root / "pairs.json").exists() else json.load(open(cfg["pairs_file"]))
     ids = list(pairs["rot"].keys())

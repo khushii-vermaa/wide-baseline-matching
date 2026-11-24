@@ -21,7 +21,7 @@ def main():
     ids = [f"demo_{i:04d}" for i in range(100)]
     rot = np.sort(rng.uniform(40, 120, 100))
     tiers = {pid: int(i * 3 // 100) + 1 for i, pid in enumerate(ids)}
-    json.dump(dict(test=ids, dev=[], tier=tiers, rot=dict(zip(ids, rot.tolist())), scene={i: "demo" for i in ids}, all_rot=rot.tolist()),
+    json.dump(dict(test=ids, dev=[], tier=tiers, rot=dict(zip(ids, rot.tolist())), scene={pid: ("0015_0.1_0.3" if k % 3 == 0 else "0022_0.1_0.3") for k, pid in enumerate(ids)}, all_rot=rot.tolist()),
               open(out / "pairs.json", "w"))
     for m, sk in SKILL.items():
         d = ensure_dir(out / "main" / "test" / m)

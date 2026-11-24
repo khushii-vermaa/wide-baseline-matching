@@ -100,6 +100,9 @@ Table~\ref{tab:repro} compares our 1{,}500-pair pose AUC under each matcher's pu
 \begin{table*}[t]\centering\footnotesize\input{generated/table_tiers}\caption{AUC@10 by tier with intervals, and disagreement $D_{ab}$ (S = SIFT+MNN, L = SP+LG, F = LoFTR).}\label{tab:tiers}\end{table*}
 \begin{figure}[t]\centering\figorbox{fig3_auc_by_tier.png}\caption{AUC@10 per tier with confidence bands.}\label{fig:tier}\end{figure}
 \begin{figure}[t]\centering\figorbox{fig5_complementarity.png}\caption{Pairs solved by none/one/two/all matchers and disagreement rate per tier.}\label{fig:comp}\end{figure}
+\subsection{Per landmark and per seed}
+\begin{table}[t]\centering\footnotesize\input{generated/table_scene}\caption{AUC@10 per landmark with 95\% bootstrap intervals. The test set mixes pairs from landmarks 0015 and 0022; small per-landmark samples give wide intervals.}\label{tab:scene}\end{table}
+\begin{table}[t]\centering\footnotesize\input{generated/table_seed}\caption{Pose AUC for each RANSAC seed (the main table reports the mean over seeds).}\label{tab:seed}\end{table}
 \subsection{Sensitivity: matcher or protocol?}
 Table~\ref{tab:sens} gives AUC@10 averaged over the other settings; Table~\ref{tab:ratio} compares MNN with the ratio test. \todo{State how much of any gap between matchers is changed by the protocol, and whether any ranking flips.}
 \begin{table}[t]\centering\footnotesize\input{generated/table_sens}\caption{Sensitivity of AUC@10 to resize, keypoint cap and RANSAC threshold (test pairs, after freezing).}\label{tab:sens}\end{table}
