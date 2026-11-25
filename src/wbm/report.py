@@ -107,24 +107,39 @@ def findings(S):
     tiers = S["tiers"]
     tier_orders = {t["tier"]: order({m: t[f"auc10_{m}"] for m in MAIN}) for t in tiers}
     changes = [t for t in tier_orders if tier_orders[t] != o10]
-    out.append("\\paragraph{Difficulty tiers.} AUC@10 by tier (tier 1 = smallest rotation of the test set): %s. %s"
+    out.append("\\paragraph{Rotation tiers.} The tiers split the test pairs by ground-truth rotation only (tier 1 = smallest rotation of the test set), so they are rotation tiers, not a complete difficulty scale. AUC@10 by tier: %s. %s"
                % ("; ".join(f"tier {t['tier']} ({t['rot_min']:.0f}--{t['rot_max']:.0f}{DEG}): " + ", ".join(f"{SHORT[m]} {n(t[f'auc10_{m}'], 2)}" for m in MAIN) for t in tiers),
                   ("The ranking differs from the overall ranking in tier %s; this is reported, not averaged away." % ", ".join(map(str, changes))) if changes
                   else "The ranking is the same in every tier."))
     last, first = tiers[-1], tiers[0]
     best = S["best_of_three"]
-    dtxt = "; ".join(f"{SHORT[x]}/{SHORT[y]}: {n(first[f'D_{x}_{y}'], 2)} $\\to$ {n(last[f'D_{x}_{y}'], 2)}" for x, y in itertools.combinations(MAIN, 2))
-    out.append("\\paragraph{Disagreement and complementarity.} Disagreement rate $D_{ab}$ from the easiest to the hardest tier: %s. In the hardest tier %d pairs are solved by no matcher, %d by exactly one, %d by two and %d by all three (pairs solved only by SIFT+MNN / SP+LG / LoFTR: %d / %d / %d). "
-               "A best-of-three oracle reaches AUC@5 %s, AUC@10 %s, AUC@20 %s."
-               % (dtxt, last["solved_by_none"], last["solved_by_one"], last["solved_by_two"], last["solved_by_all"], last["only_sift_mnn"], last["only_splg"], last["only_loftr"],
+    pairs3 = list(itertools.combinations(MAIN, 2))
+    def dser(t):
+        return "; ".join(f"{SHORT[x]}/{SHORT[y]}: " + ", ".join(f"{n(tt[f'D_{x}_{y}'], 2)} ({round(tt[f'D_{x}_{y}'] * tt['n'])}/{tt['n']})" for tt in tiers) for x, y in pairs3)
+    best = S["best_of_three"]
+    out.append("\\paragraph{Disagreement and complementarity.} Here a pair counts as solved by a matcher if its median pose error over the RANSAC seeds is below $10^\\circ$, and $D_{ab}$ is the fraction of the pairs in a tier on which exactly one of the two matchers solves it (denominator: all pairs in the tier). "
+               "$D_{ab}$ by tier, from the smallest to the largest rotation (pairs in parentheses): %s. In the largest-rotation tier %d pairs are solved by no matcher, %d by exactly one, %d by two and %d by all three (pairs solved only by SIFT+MNN / SP+LG / LoFTR: %d / %d / %d). "
+               "A best-of-three oracle, which picks the best matcher per pair using the ground truth, reaches AUC@5 %s, AUC@10 %s, AUC@20 %s."
+               % (dser(None), last["solved_by_none"], last["solved_by_one"], last["solved_by_two"], last["solved_by_all"], last["only_sift_mnn"], last["only_splg"], last["only_loftr"],
                   n(best["AUC@5"], 3), n(best["AUC@10"], 3), n(best["AUC@20"], 3)))
+    if S.get("tier_scene"):
+        out.append("\\paragraph{Landmarks per tier.} Pairs per tier by landmark: %s." % "; ".join(
+            f"tier {t}: " + ", ".join(f"{sc} {c}" for sc, c in v.items()) for t, v in sorted(S["tier_scene"].items(), key=lambda kv: int(kv[0]))))
     # pre-declared expectations (proposal 7.2)
     e1 = o10[-1] == "sift_mnn"
     mism = [k for k in tier_agree if not tier_agree[k]]
     most = max(MAIN, key=lambda m: T[m]["mean_matches"])
     e2 = bool(mism) or not o["matches"]["agrees_with_auc"]
-    rises = sum(last[f"D_{x}_{y}"] > first[f"D_{x}_{y}"] for x, y in itertools.combinations(MAIN, 2))
-    e3 = "held" if rises == 3 else ("held for %d of 3 matcher pairs" % rises if rises else "did not hold")
+    seq = lambda x, y: [tt[f"D_{x}_{y}"] for tt in tiers]
+    rises = sum(seq(x, y)[-1] > seq(x, y)[0] for x, y in pairs3)
+    strict = sum(all(b > a for a, b in zip(seq(x, y), seq(x, y)[1:])) for x, y in pairs3)
+    if strict == 3:
+        e3 = "held (strictly increasing across all tiers for all three matcher pairs)"
+    elif rises == 0:
+        e3 = "did not hold"
+    else:
+        e3 = ("partly held: the rate is higher in the largest-rotation tier than in the smallest for %d of 3 matcher pairs, but strictly increasing across all tiers for %d of 3; "
+              "SIFT+MNN pairs are dominated by SIFT+MNN failing in every tier" % (rises, strict))
     dd = {(d["a"], d["b"], d["tau"]): d for d in S["paired_differences"]}
     d_ll = dd.get((LABELS["splg"], LABELS["loftr"], 10))
     out.append("\\paragraph{Pre-declared expectations (Section~\\ref{sec:expect}).} "

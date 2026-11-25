@@ -19,6 +19,7 @@ from .results_io import load_matcher
 from .stats import bootstrap, ci, success_matrix, disagreement, auc_seeds
 
 MAIN = ["sift_mnn", "splg", "loftr"]
+SHORT = {"sift_mnn": "SIFT+MNN", "splg": "SP+LG", "loftr": "LoFTR"}
 COL = {"sift_mnn": "#8a6d3b", "splg": "#1f7a8c", "loftr": "#c0392b"}
 
 
@@ -127,6 +128,7 @@ def main():
                 row[f"auc{t}_{m}_lo"], row[f"auc{t}_{m}_hi"] = ci(sb[(m, t)])
         scenes.append(row)
     pd.DataFrame(scenes).to_csv(tab_dir / "per_landmark.csv", index=False)
+    tier_scene = {int(t): {sc: int(((tier == t) & (lm == sc)).sum()) for sc in sorted(set(lm))} for t in range(1, ntier + 1)}
     per_seed = {m: {f"auc{t}": [auc(errs[m][:, k], t) for k in range(S)] for t in (5, 10)} for m in MAIN}
     pd.DataFrame([dict(matcher=m, seed=k, auc5=per_seed[m]["auc5"][k], auc10=per_seed[m]["auc10"][k]) for m in MAIN for k in range(S)]).to_csv(tab_dir / "per_seed.csv", index=False)
     best_err = np.min(np.stack([errs[m] for m in MAIN]), axis=0)
@@ -152,12 +154,12 @@ def main():
     ax.set_ylabel("AUC@10"); ax.legend(); ax.set_ylim(0, 1)
     fig.tight_layout(); fig.savefig(fig_dir / "fig3_auc_by_tier.png", dpi=150); plt.close(fig)
 
-    fig, axs = plt.subplots(1, 3, figsize=(12, 3.8))
+    fig, axs = plt.subplots(1, 3, figsize=(13, 3.8))
     cnt = {m: D[m]["n_matches"].mean() for m in MAIN}
     aucs = {m: auc_seeds(errs[m], 10) for m in MAIN}
     for ax, vals, title in [(axs[0], cnt, "mean match count"), (axs[1], aucs, "AUC@10")]:
-        ax.bar([LABELS[m] for m in MAIN], [vals[m] for m in MAIN], color=[COL[m] for m in MAIN]); ax.set_title(title)
-        ax.tick_params(axis="x", labelrotation=20)
+        ax.bar([SHORT[m] for m in MAIN], [vals[m] for m in MAIN], color=[COL[m] for m in MAIN]); ax.set_title(title)
+        ax.tick_params(axis="x", labelsize=9)
     for m in MAIN:
         d = D[m]
         ir = (d["n_inliers"] / np.maximum(d["n_matches"][:, None], 1)).mean(1)
@@ -180,7 +182,7 @@ def main():
         generated=datetime.now(timezone.utc).isoformat(), synthetic=bool(a.synthetic), protocol=a.protocol,
         n_pairs=len(ids), settings=cfg["main"], table1=T1.drop(columns=["key"]).to_dict("records"),
         paired_differences=diffs, ranks=ranks, inlier_ratio_vs_pose_spearman={LABELS[k]: v for k, v in corr.items()},
-        tiers=tiers, best_of_three=best_of_three, scenes=scenes, per_seed=per_seed, seeds=list(cfg["seeds"]),
+        tiers=tiers, best_of_three=best_of_three, scenes=scenes, tier_scene=tier_scene, per_seed=per_seed, seeds=list(cfg["seeds"]),
         figures=sorted(p.name for p in fig_dir.glob("*.png")),
         expectations_note="Pre-declared expectations (proposal 7.2) must be checked against these numbers; if one fails, report it as the finding.",
     )

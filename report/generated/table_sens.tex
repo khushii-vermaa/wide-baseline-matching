@@ -1,7 +1,16 @@
 \begin{tabular}{lrrr}
 \toprule
-Setting & SIFT+MNN & SP+LG & LoFTR \\
+Setting (AUC@10, mean over other settings) & SIFT+MNN & SP+LG & LoFTR \\
 \midrule
-TBD & TBD & TBD & TBD \\
+resize 640 & 0.063 & 0.470 & 0.655 \\
+resize 840 & 0.071 & 0.570 & 0.714 \\
+resize 1024 & 0.072 & 0.623 & 0.752 \\
+resize 1600 & 0.051 & 0.685 & 0.758 \\
+keypoints 1024 & 0.048 & 0.570 & -- \\
+keypoints 2048 & 0.067 & 0.593 & -- \\
+keypoints 4096 & 0.078 & 0.598 & -- \\
+RANSAC thr. 0.5 & 0.060 & 0.593 & 0.751 \\
+RANSAC thr. 1 & 0.065 & 0.611 & 0.729 \\
+RANSAC thr. 2 & 0.067 & 0.557 & 0.679 \\
 \bottomrule
 \end{tabular}

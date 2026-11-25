@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-24T12:36:25.643718+00:00",
+ "generated": "2026-11-25T19:22:38.456086+00:00",
  "synthetic": false,
  "protocol": "main",
  "n_pairs": 100,
@@ -385,6 +385,20 @@
    "auc10_loftr_hi": 0.8577623085022981
   }
  ],
+ "tier_scene": {
+  "1": {
+   "0015": 9,
+   "0022": 25
+  },
+  "2": {
+   "0015": 10,
+   "0022": 23
+  },
+  "3": {
+   "0015": 11,
+   "0022": 22
+  }
+ },
  "per_seed": {
   "sift_mnn": {
    "auc5": [
@@ -433,7 +447,15 @@
   "fig2_pose_error_cdf.png",
   "fig3_auc_by_tier.png",
   "fig4_counts_vs_pose.png",
-  "fig5_complementarity.png"
+  "fig5_complementarity.png",
+  "fig6_disagree_0015_0.1_0.3_0049.png",
+  "fig6_disagree_0015_0.1_0.3_0080.png",
+  "fig6_disagree_0015_0.1_0.3_0100.png",
+  "fig6_disagree_0015_0.1_0.3_0111.png",
+  "fig6_hardest_0022_0.1_0.3_0034.png",
+  "fig6_hardest_0022_0.1_0.3_0149.png",
+  "fig6_hardest_0022_0.1_0.3_0197.png",
+  "fig6_hardest_0022_0.1_0.3_0226.png"
  ],
  "expectations_note": "Pre-declared expectations (proposal 7.2) must be checked against these numbers; if one fails, report it as the finding."
 }
