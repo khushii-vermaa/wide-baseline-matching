@@ -118,7 +118,7 @@ def findings(S):
         return "; ".join(f"{SHORT[x]}/{SHORT[y]}: " + ", ".join(f"{n(tt[f'D_{x}_{y}'], 2)} ({round(tt[f'D_{x}_{y}'] * tt['n'])}/{tt['n']})" for tt in tiers) for x, y in pairs3)
     best = S["best_of_three"]
     out.append("\\paragraph{Disagreement and complementarity.} Here a pair counts as solved by a matcher if its median pose error over the RANSAC seeds is below $10^\\circ$, and $D_{ab}$ is the fraction of the pairs in a tier on which exactly one of the two matchers solves it (denominator: all pairs in the tier). "
-               "$D_{ab}$ by tier, from the smallest to the largest rotation (pairs in parentheses): %s. In the largest-rotation tier %d pairs are solved by no matcher, %d by exactly one, %d by two and %d by all three (pairs solved only by SIFT+MNN / SP+LG / LoFTR: %d / %d / %d). "
+               "$D_{ab}$ by tier, from the smallest to the largest rotation (pairs in parentheses): %s. In the largest-rotation tier, the number of pairs solved by no matcher is %d, by exactly one %d, by two %d and by all three %d (pairs solved only by SIFT+MNN / SP+LG / LoFTR: %d / %d / %d). "
                "A best-of-three oracle, which picks the best matcher per pair using the ground truth, reaches AUC@5 %s, AUC@10 %s, AUC@20 %s."
                % (dser(None), last["solved_by_none"], last["solved_by_one"], last["solved_by_two"], last["solved_by_all"], last["only_sift_mnn"], last["only_splg"], last["only_loftr"],
                   n(best["AUC@5"], 3), n(best["AUC@10"], 3), n(best["AUC@20"], 3)))
