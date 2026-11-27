@@ -29,7 +29,7 @@ Dockerfile              deployment image (port 7860)
 ```bash
 python -m venv .venv && source .venv/bin/activate       # Windows: .venv\Scripts\activate
 # PyTorch first. CPU:
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install torch==2.15.0 torchvision==0.29.2 --index-url https://download.pytorch.org/whl/cpu
 # (NVIDIA GPU: pick the command for your CUDA version at pytorch.org instead)
 pip install -r requirements.txt
 pip install -e . --no-deps

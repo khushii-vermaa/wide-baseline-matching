@@ -5,7 +5,6 @@ __pycache__/
 .venv/
 results_demo/
 results/*/*/*/matches/
-logs/
 report/*.bak
 
 *.aux

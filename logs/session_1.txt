@@ -1,0 +1,564 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20261120180843
+Username: LAPTOP-31Q33ELH\Khushi
+RunAs User: LAPTOP-31Q33ELH\Khushi
+Configuration Name: 
+Machine: LAPTOP-31Q33ELH (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command try { . "c:\Users\Khushi\AppData\Local\Programs\Microsoft VS Code\69047191fc\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1" } catch {}
+Process ID: 9476
+PSVersion: 5.1.26100.9818
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9818
+BuildVersion: 10.0.26100.9818
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is logs\session_1.txt
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.synth --out results_demo
+python -m wbm.analyze --config configs/config.yaml --results-root results_demo --pairs results_demo/pairs.json --synthetic
+$env:RESULTS_ROOT = "results_demo"
+python -m uvicorn api.main:app --port 8000
+
+
+
+(.venv) TerminatingError(): "The pipeline has been stopped."
+>> TerminatingError(): "The pipeline has been stopped."
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) git clone --depth 1 https://github.com/zju3dv/LoFTR $env:TEMP\LoFTR
+mkdir data\megadepth_test_1500_scene_info -Force
+Copy-Item "$env:TEMP\LoFTR\assets\megadepth_test_1500_scene_info\*" data\megadepth_test_1500_scene_info\
+dir data\megadepth_test_1500_scene_info
+
+
+
+    Directory: C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        20-11-2026     18:22                megadepth_test_1500_scene_info
+
+
+    Directory: C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\data\megadepth_test_1500_scene_info
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        20-11-2026     18:22         231253 0015_0.1_0.3.npz
+-a----        20-11-2026     18:22         231253 0015_0.3_0.5.npz
+-a----        20-11-2026     18:22         272610 0022_0.1_0.3.npz
+-a----        20-11-2026     18:22         272610 0022_0.3_0.5.npz
+-a----        20-11-2026     18:22         272610 0022_0.5_0.7.npz
+-a----        20-11-2026     18:22             68 megadepth_test_1500.txt
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) pip install gdown
+gdown --folder https://drive.google.com/drive/folders/1nTkK1485FuwqA0DbZrK2Cl0WnXadUZdc -O data\downloads
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.data --inspect
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Get-ChildItem data\downloads -Recurse | Select-Object FullName, Length
+
+FullName                                                                                        Length
+--------                                                                                        ------
+C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\data\downloads\megadepth_test_1500.tar  626411520
+C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\data\downloads\scannet_test_1500.tar   1097185280
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) mkdir data\megadepth -Force
+tar -xf "data\downloads\megadepth_test_1500.tar" -C data\megadepth
+
+
+    Directory: C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        20-11-2026     18:52                megadepth
+
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Expand-Archive "data\downloads\megadepth.zip" -DestinationPath data\megadepth
+(.venv) TerminatingError(Resolve-Path): "The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: Cannot find path 'C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\data\downloads\megadepth.zip' because it does not exist."
+(.venv) TerminatingError(): "The pipeline has been stopped."
+>> TerminatingError(Expand-Archive): "The path 'data\downloads\megadepth.zip' either does not exist or is not a valid file system path."
+Expand-Archive : The path 'data\downloads\megadepth.zip' either does not exist or is not a valid file system path.
+At line:1 char:1
++ Expand-Archive "data\downloads\megadepth.zip" -DestinationPath data\m ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (data\downloads\megadepth.zip:String) [Expand-Archive], 
+InvalidOperationException
+    + FullyQualifiedErrorId : ArchiveCmdletPathNotFound,Expand-Archive
+Expand-Archive : The path 'data\downloads\megadepth.zip' either does not exist or is not a valid file
+system path.
+At line:1 char:1
++ Expand-Archive "data\downloads\megadepth.zip" -DestinationPath data\m ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (data\downloads\megadepth.zip:String) [Expand-Archive], In
+   validOperationException
+    + FullyQualifiedErrorId : ArchiveCmdletPathNotFound,Expand-Archive
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Get-ChildItem data\megadepth | Select-Object Name
+(Get-ChildItem data\megadepth -Recurse -Filter *.jpg).Count
+Get-ChildItem data\megadepth -Recurse -Directory -Filter Undistorted_SfM | Select-Object FullName
+
+Name
+----
+megadepth_test_1500
+806
+
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.data --inspect
+pairs: 1500   scenes: ['0015_0.1_0.3', '0015_0.3_0.5', '0022_0.1_0.3', '0022_0.3_0.5', '0022_0.5_0.7']
+rotation deg  min 0.3  median 10.5  max 58.0
+sample pair: 0015_0.1_0.3_0000 Undistorted_SfM/0015/images/2248320068_7553a48263_o.jpg
+K0=
+ [[1.57921e+03 0.00000e+00 8.00000e+02]
+ [0.00000e+00 1.57909e+03 4.99000e+02]
+ [0.00000e+00 0.00000e+00 1.00000e+00]]
+images missing in first 50 pairs: 0
+Pose convention assumed: world-to-camera (T_0to1 = T1 @ inv(T0)). The random-match / symmetry / reproductio
+n checks will catch a wrong assumption.
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Get-ChildItem data\megadepth\megadepth_test_1500 | Select-Object Name
+Get-ChildItem data\megadepth\megadepth_test_1500 -Recurse -Filter *.jpg | Select-Object -First 3 FullName
+
+Name
+----
+Undistorted_SfM
+
+
+
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Get-ChildItem data\megadepth -Recurse -Filter 2248320068_7553a48263_o.jpg | Select-Object FullName
+
+FullName
+--------
+C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\data\megadepth\megadepth_test_1500\Undistorted_SfM...
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) data_root: data/megadepth/megadepth_test_1500
+data_root: : The term 'data_root:' is not recognized as the name of a cmdlet, function, script file, or operable 
+program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ data_root: data/megadepth/megadepth_test_1500
++ ~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (data_root::String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+data_root: : The term 'data_root:' is not recognized as the name of a cmdlet, function, script file, or
+operable program. Check the spelling of the name, or if a path was included, verify that the path is
+correct and try again.
+At line:1 char:1
++ data_root: data/megadepth/megadepth_test_1500
++ ~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (data_root::String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.data --inspect
+ [[1.57921e+03 0.00000e+00 8.00000e+02]
+ [0.00000e+00 1.57909e+03 4.99000e+02]
+ [0.00000e+00 0.00000e+00 1.00000e+00]]
+images missing in first 50 pairs: 0
+Pose convention assumed: world-to-camera (T_0to1 = T1 @ inv(T0)). The random-match / symmetry / reproductio
+n checks will catch a wrong assumption.
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Remove-Item data\downloads\scannet_test_1500.tar
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.select_pairs
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -c "import json,collections; p=json.load(open('pairs/pairs.json')); print(collections.Counter(p['scene'][i][:4] for i in p['test'])); print(min(p['rot'][i] for i in p['dev']))"
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Add-Content .gitignore "logs/"
+git init
+git branch -M main
+git add .
+git status
+git commit -m "Initial harness, pair selection and frozen pair list"
+git remote add origin https://github.com/khushii-vermaa/wide-baseline-matching.git
+git push -u origin main
+
+
+
+
+
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) git remote -v
+git remote set-url origin https://github.com/khushii-vermaa/wide-baseline-matching.git
+git push -u origin main
+
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -c "import json,collections; p=json.load(open('pairs/pairs.json')); print(collections.Counter(p['scene'][i][:4] for i in p['test'])); print(min(p['rot'][i] for i in p['dev']))"
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.controls --matchers sift_mnn loftr
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.controls --matchers sift_mnn loftr 2>&1 | Tee-Object -FilePath logs\controls.txt
+[1] random-match AUC@10 = 0.0000  (must be ~0)
+[2] sift_mnn (diagnostic only): both directions succeed on 2/20 pairs; success status agrees on 85%; median |err(A,B)-err(B,A)| over successes = 5.21 deg
+[3] sift_mnn (diagnostic only): errors on 5 smallest-rotation non-test pairs = [1.47, 4.83, 1.7, 22.95, 5.01]  (learned matchers: median must be < 10)
+[2] loftr (GATED): both directions succeed on 18/20 pairs; success status agrees on 100%; median |err(A,B)-err(B,A)| over successes = 0.81 deg
+[3] loftr (GATED): errors on 5 smallest-rotation non-test pairs = [1.16, 0.55, 5.35, 11.17, 4.46]  (learned matchers: median must be < 10)
+CONTROLS PASSED
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Copy-Item results\figures\fig1_pair_selection.png "$HOME\Desktop\"
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Expand-Archive "$HOME\Downloads\report_addon.zip" -DestinationPath . -Force
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) dir report
+
+
+    Directory: C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\report
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        21-11-2026     13:34                figures
+d-----        21-11-2026     13:34                generated
+-a----        18-11-2026     08:37          19240 main.tex
+-a----        18-11-2026     08:36           3436 refs.bib
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) git add report src/wbm/report.py run_all.sh
+git commit -m "Add report source and report generator"
+git push
+
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Get-Content logs\controls.txt
+[1] random-match AUC@10 = 0.0000  (must be ~0)
+[2] sift_mnn (diagnostic only): both directions succeed on 2/20 pairs; success status agrees on 85%; median |err(A,B)-err(B,A)| over successes = 5.21 deg
+[3] sift_mnn (diagnostic only): errors on 5 smallest-rotation non-test pairs = [1.47, 4.83, 1.7, 22.95, 5.01]  (learned matchers: median must be < 10)
+[2] loftr (GATED): both directions succeed on 18/20 pairs; success status agrees on 100%; median |err(A,B)-err(B,A)| over successes = 0.81 deg
+[3] loftr (GATED): errors on 5 smallest-rotation non-test pairs = [1.16, 0.55, 5.35, 11.17, 4.46]  (learned matchers: median must be < 10)
+CONTROLS PASSED
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -c "import lightglue; print('lightglue ok')"
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.sweep --split dev --freeze 2>&1 | Tee-Object -FilePath logs\sweep_dev.txt
+python :
+At line:1 char:1
++ python -m wbm.sweep --split dev --freeze 2>&1 | Tee-Object -FilePath  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+sift_mnn r=640 kp=2048:   0%|          | 0/200 [00:00<?, ?it/s]
+sift_mnn r=640 kp=2048:   0%|          | 1/200 [00:00<00:52,  3.76it/s]
+sift_mnn r=640 kp=2048:   1%|1         | 2/200 [00:00<00:43,  4.55it/s]
+sift_mnn r=640 kp=2048:   2%|1         | 3/200 [00:00<00:37,  5.26it/s]
+sift_mnn r=640 kp=2048:   2%|2         | 4/200 [00:00<00:34,  5.65it/s]
+sift_mnn r=640 kp=2048:   2%|2         | 5/200 [00:00<00:37,  5.21it/s]
+sift_mnn r=640 kp=2048:   3%|3         | 6/200 [00:01<00:35,  5.42it/s]
+sift_mnn r=640 kp=2048:   4%|3         | 7/200 [00:01<00:36,  5.31it/s]
+sift_mnn r=640 kp=2048:   4%|4         | 8/200 [00:01<00:37,  5.11it/s]
+sift_mnn r=640 kp=2048:   4%|4         | 9/200 [00:01<00:34,  5.55it/s]
+sift_mnn r=640 kp=2048:   5%|5         | 10/200 [00:01<00:32,  5.83it/s]
+sift_mnn r=640 kp=2048:   6%|5         | 11/200 [00:02<00:33,  5.57it/s]
+sift_mnn r=640 kp=2048:   6%|6         | 12/200 [00:02<00:34,  5.41it/s]
+sift_mnn r=640 kp=2048:   6%|6         | 13/200 [00:02<00:35,  5.30it/s]
+sift_mnn r=640 kp=2048:   7%|7         | 14/200 [00:02<00:31,  5.84it/s]
+sift_mnn r=640 kp=2048:   8%|7         | 15/200 [00:02<00:29,  6.25it/s]
+sift_mnn r=640 kp=2048:   8%|8         | 16/200 [00:02<00:29,  6.21it/s]
+sift_mnn r=640 kp=2048:   8%|8         | 17/200 [00:03<00:31,  5.85it/s]
+sift_mnn r=640 kp=2048:   9%|9         | 18/200 [00:03<00:32,  5.69it/s]
+sift_mnn r=640 kp=2048:  10%|9         | 19/200 [00:03<00:31,  5.84it/s]
+sift_mnn r=640 kp=2048:  10%|#         | 20/200 [00:03<00:29,  6.00it/s]
+sift_mnn r=640 kp=2048:  10%|#         | 21/200 [00:03<00:30,  5.87it/s]
+sift_mnn r=640 kp=2048:  11%|#1        | 22/200 [00:03<00:29,  6.03it/s]
+sift_mnn r=640 kp=2048:  12%|#1        | 23/200 [00:04<00:28,  6.16it/s]
+sift_mnn r=640 kp=2048:  12%|#2        | 24/200 [00:04<00:29,  5.99it/s]
+sift_mnn r=640 kp=2048:  12%|#2        | 25/200 [00:04<00:29,  5.90it/s]
+sift_mnn r=640 kp=2048:  13%|#3        | 26/200 [00:04<00:32,  5.39it/s]
+sift_mnn r=640 kp=2048:  14%|#3        | 27/200 [00:04<00:31,  5.57it/s]
+sift_mnn r=640 kp=2048:  14%|#4        | 28/200 [00:05<00:32,  5.24it/s]
+sift_mnn r=640 kp=2048:  14%|#4        | 29/200 [00:05<00:33,  5.18it/s]
+sift_mnn r=640 kp=2048:  15%|#5        | 30/200 [00:05<00:30,  5.63it/s]
+sift_mnn r=640 kp=2048:  16%|#5        | 31/200 [00:05<00:30,  5.62it/s]
+sift_mnn r=640 kp=2048:  16%|#6        | 32/200 [00:05<00:32,  5.14it/s]
+sift_mnn r=640 kp=2048:  16%|#6        | 33/200 [00:06<00:34,  4.85it/s]
+sift_mnn r=640 kp=2048:  17%|#7        | 34/200 [00:06<00:31,  5.24it/s]
+sift_mnn r=640 kp=2048:  18%|#7        | 35/200 [00:06<00:29,  5.63it/s]
+sift_mnn r=640 kp=2048:  18%|#8        | 36/200 [00:06<00:28,  5.67it/s]
+sift_mnn r=640 kp=2048:  18%|#8        | 37/200 [00:06<00:29,  5.53it/s]
+sift_mnn r=640 kp=2048:  19%|#9        | 38/200 [00:06<00:27,  5.79it/s]
+sift_mnn r=640 kp=2048:  20%|#9        | 39/200 [00:07<00:28,  5.70it/s]
+sift_mnn r=640 kp=2048:  20%|##        | 40/200 [00:07<00:27,  5.82it/s]
+sift_mnn r=640 kp=2048:  20%|##        | 41/200 [00:07<00:31,  5.12it/s]
+sift_mnn r=640 kp=2048:  21%|##1       | 42/200 [00:07<00:31,  5.07it/s]
+sift_mnn r=640 kp=2048:  22%|##1       | 43/200 [00:07<00:28,  5.46it/s]
+sift_mnn r=640 kp=2048:  22%|##2       | 44/200 [00:08<00:32,  4.78it/s]
+sift_mnn r=640 kp=2048:  22%|##2       | 45/200 [00:08<00:29,  5.31it/s]
+sift_mnn r=640 kp=2048:  23%|##3       | 46/200 [00:08<00:29,  5.27it/s]
+sift_mnn r=640 kp=2048:  24%|##3       | 47/200 [00:08<00:28,  5.34it/s]
+sift_mnn r=640 kp=2048:  24%|##4       | 48/200 [00:08<00:30,  5.03it/s]
+sift_mnn r=640 kp=2048:  24%|##4       | 49/200 [00:08<00:29,  5.06it/s]
+sift_mnn r=640 kp=2048:  25%|##5       | 50/200 [00:09<00:33,  4.53it/s]
+sift_mnn r=640 kp=2048:  26%|##5       | 51/200 [00:09<00:31,  4.70it/s]
+sift_mnn r=640 kp=2048:  26%|##6       | 52/200 [00:09<00:28,  5.20it/s]
+sift_mnn r=640 kp=2048:  26%|##6       | 53/200 [00:09<00:29,  5.03it/s]
+sift_mnn r=640 kp=2048:  27%|##7       | 54/200 [00:09<00:28,  5.13it/s]
+sift_mnn r=640 kp=2048:  28%|##7       | 55/200 [00:10<00:29,  4.97it/s]
+sift_mnn r=640 kp=2048:  28%|##8       | 56/200 [00:10<00:30,  4.66it/s]
+sift_mnn r=640 kp=2048:  28%|##8       | 57/200 [00:10<00:29,  4.86it/s]
+sift_mnn r=640 kp=2048:  29%|##9       | 58/200 [00:10<00:30,  4.70it/s]
+sift_mnn r=640 kp=2048:  30%|##9       | 59/200 [00:11<00:29,  4.74it/s]
+sift_mnn r=640 kp=2048:  30%|###       | 60/200 [00:11<00:29,  4.78it/s]
+sift_mnn r=640 kp=2048:  30%|###       | 61/200 [00:11<00:29,  4.76it/s]
+sift_mnn r=640 kp=2048:  31%|###1      | 62/200 [00:11<00:29,  4.69it/s]
+sift_mnn r=640 kp=2048:  32%|###1      | 63/200 [00:11<00:27,  4.99it/s]
+sift_mnn r=640 kp=2048:  32%|###2      | 64/200 [00:12<00:24,  5.57it/s]
+sift_mnn r=640 kp=2048:  32%|###2      | 65/200 [00:12<00:23,  5.73it/s]
+sift_mnn r=640 kp=2048:  33%|###3      | 66/200 [00:12<00:22,  5.83it/s]
+sift_mnn r=640 kp=2048:  34%|###3      | 67/200 [00:12<00:24,  5.37it/s]
+sift_mnn r=640 kp=2048:  34%|###4      | 68/200 [00:12<00:21,  6.18it/s]
+sift_mnn r=640 kp=2048:  34%|###4      | 69/200 [00:12<00:21,  6.00it/s]
+sift_mnn r=640 kp=2048:  35%|###5      | 70/200 [00:13<00:21,  6.03it/s]
+sift_mnn r=640 kp=2048:  36%|###5      | 71/200 [00:13<00:22,  5.62it/s]
+sift_mnn r=640 kp=2048:  36%|###6      | 72/200 [00:13<00:25,  5.08it/s]
+sift_mnn r=640 kp=2048:  36%|###6      | 73/200 [00:13<00:24,  5.10it/s]
+sift_mnn r=640 kp=2048:  37%|###7      | 74/200 [00:13<00:26,  4.71it/s]
+sift_mnn r=640 kp=2048:  38%|###7      | 75/200 [00:14<00:25,  4.97it/s]
+sift_mnn r=640 kp=2048:  38%|###8      | 76/200 [00:14<00:23,  5.21it/s]
+sift_mnn r=640 kp=2048:  38%|###8      | 77/200 [00:14<00:22,  5.36it/s]
+sift_mnn r=640 kp=2048:  39%|###9      | 78/200 [00:14<00:22,  5.41it/s]
+sift_mnn r=640 kp=2048:  40%|###9      | 79/200 [00:14<00:23,  5.22it/s]
+sift_mnn r=640 kp=2048:  40%|####      | 80/200 [00:14<00:22,  5.30it/s]
+sift_mnn r=640 kp=2048:  40%|####      | 81/200 [00:15<00:22,  5.28it/s]
+sift_mnn r=640 kp=2048:  41%|####1     | 82/200 [00:15<00:21,  5.49it/s]
+sift_mnn r=640 kp=2048:  42%|####1     | 83/200 [00:15<00:20,  5.70it/s]
+sift_mnn r=640 kp=2048:  42%|####2     | 84/200 [00:15<00:18,  6.13it/s]
+sift_mnn r=640 kp=2048:  42%|####2     | 85/200 [00:15<00:19,  5.84it/s]
+sift_mnn r=640 kp=2048:  43%|####3     | 86/200 [00:16<00:22,  5.05it/s]
+sift_mnn r=640 kp=2048:  44%|####3     | 87/200 [00:16<00:20,  5.38it/s]
+sift_mnn r=640 kp=2048:  44%|####4     | 88/200 [00:16<00:20,  5.40it/s]
+sift_mnn r=640 kp=2048:  44%|####4     | 89/200 [00:16<00:20,  5.53it/s]
+sift_mnn r=640 kp=2048:  45%|####5     | 90/200 [00:16<00:18,  5.81it/s]
+sift_mnn r=640 kp=2048:  46%|####5     | 91/200 [00:16<00:20,  5.25it/s]
+sift_mnn r=640 kp=2048:  46%|####6     | 92/200 [00:17<00:22,  4.86it/s]
+sift_mnn r=640 kp=2048:  46%|####6     | 93/200 [00:17<00:21,  4.98it/s]
+sift_mnn r=640 kp=2048:  47%|####6     | 94/200 [00:17<00:21,  4.98it/s]
+sift_mnn r=640 kp=2048:  48%|####7     | 95/200 [00:17<00:22,  4.65it/s]
+sift_mnn r=640 kp=2048:  48%|####8     | 96/200 [00:18<00:20,  4.97it/s]
+sift_mnn r=640 kp=2048:  48%|####8     | 97/200 [00:18<00:20,  5.08it/s]
+sift_mnn r=640 kp=2048:  49%|####9     | 98/200 [00:18<00:19,  5.14it/s]
+sift_mnn r=640 kp=2048:  50%|####9     | 99/200 [00:18<00:18,  5.32it/s]
+sift_mnn r=640 kp=2048:  50%|#####     | 100/200 [00:18<00:19,  5.25it/s]
+sift_mnn r=640 kp=2048:  50%|#####     | 101/200 [00:18<00:18,  5.26it/s]
+sift_mnn r=640 kp=2048:  51%|#####1    | 102/200 [00:19<00:20,  4.88it/s]
+sift_mnn r=640 kp=2048:  52%|#####1    | 103/200 [00:19<00:19,  4.89it/s]
+sift_mnn r=640 kp=2048:  52%|#####2    | 104/200 [00:19<00:21,  4.41it/s]
+sift_mnn r=640 kp=2048:  52%|#####2    | 105/200 [00:19<00:22,  4.14it/s]
+sift_mnn r=640 kp=2048:  53%|#####3    | 106/200 [00:20<00:20,  4.49it/s]
+sift_mnn r=640 kp=2048:  54%|#####3    | 107/200 [00:20<00:21,  4.30it/s]
+sift_mnn r=640 kp=2048:  54%|#####4    | 108/200 [00:20<00:20,  4.56it/s]
+sift_mnn r=640 kp=2048:  55%|#####4    | 109/200 [00:20<00:21,  4.22it/s]
+sift_mnn r=640 kp=2048:  55%|#####5    | 110/200 [00:21<00:19,  4.64it/s]
+sift_mnn r=640 kp=2048:  56%|#####5    | 111/200 [00:21<00:19,  4.61it/s]
+sift_mnn r=640 kp=2048:  56%|#####6    | 112/200 [00:21<00:19,  4.50it/s]
+sift_mnn r=640 kp=2048:  56%|#####6    | 113/200 [00:21<00:17,  4.85it/s]
+sift_mnn r=640 kp=2048:  57%|#####6    | 114/200 [00:21<00:17,  4.88it/s]
+sift_mnn r=640 kp=2048:  57%|#####7    | 115/200 [00:22<00:16,  5.22it/s]
+sift_mnn r=640 kp=2048:  58%|#####8    | 116/200 [00:22<00:16,  5.14it/s]
+sift_mnn r=640 kp=2048:  58%|#####8    | 117/200 [00:22<00:15,  5.28it/s]
+sift_mnn r=640 kp=2048:  59%|#####8    | 118/200 [00:22<00:15,  5.44it/s]
+sift_mnn r=640 kp=2048:  60%|#####9    | 119/200 [00:22<00:13,  5.98it/s]
+sift_mnn r=640 kp=2048:  60%|######    | 120/200 [00:22<00:14,  5.59it/s]
+sift_mnn r=640 kp=2048:  60%|######    | 121/200 [00:23<00:13,  5.75it/s]
+sift_mnn r=640 kp=2048:  61%|######1   | 122/200 [00:23<00:13,  5.80it/s]
+sift_mnn r=640 kp=2048:  62%|######1   | 123/200 [00:23<00:13,  5.71it/s]
+sift_mnn r=640 kp=2048:  62%|######2   | 124/200 [00:23<00:12,  5.86it/s]
+sift_mnn r=640 kp=2048:  62%|######2   | 125/200 [00:23<00:14,  5.18it/s]
+sift_mnn r=640 kp=2048:  63%|######3   | 126/200 [00:23<00:12,  5.78it/s]
+sift_mnn r=640 kp=2048:  64%|######3   | 127/200 [00:24<00:12,  5.76it/s]
+sift_mnn r=640 kp=2048:  64%|######4   | 128/200 [00:24<00:12,  5.67it/s]
+sift_mnn r=640 kp=2048:  64%|######4   | 129/200 [00:24<00:12,  5.74it/s]
+sift_mnn r=640 kp=2048:  65%|######5   | 130/200 [00:24<00:13,  5.23it/s]
+sift_mnn r=640 kp=2048:  66%|######5   | 131/200 [00:24<00:12,  5.34it/s]
+sift_mnn r=640 kp=2048:  66%|######6   | 132/200 [00:25<00:14,  4.84it/s]
+sift_mnn r=640 kp=2048:  66%|######6   | 133/200 [00:25<00:14,  4.78it/s]
+sift_mnn r=640 kp=2048:  67%|######7   | 134/200 [00:25<00:12,  5.14it/s]
+sift_mnn r=640 kp=2048:  68%|######7   | 135/200 [00:25<00:12,  5.16it/s]
+sift_mnn r=640 kp=2048:  68%|######8   | 136/200 [00:25<00:12,  5.12it/s]
+sift_mnn r=640 kp=2048:  68%|######8   | 137/200 [00:26<00:11,  5.31it/s]
+sift_mnn r=640 kp=2048:  69%|######9   | 138/200 [00:26<00:11,  5.40it/s]
+sift_mnn r=640 kp=2048:  70%|######9   | 139/200 [00:26<00:10,  5.78it/s]
+sift_mnn r=640 kp=2048:  70%|#######   | 140/200 [00:26<00:10,  5.92it/s]
+sift_mnn r=640 kp=2048:  70%|#######   | 141/200 [00:26<00:09,  6.07it/s]
+sift_mnn r=640 kp=2048:  71%|#######1  | 142/200 [00:26<00:11,  5.18it/s]
+sift_mnn r=640 kp=2048:  72%|#######1  | 143/200 [00:27<00:11,  4.75it/s]
+sift_mnn r=640 kp=2048:  72%|#######2  | 144/200 [00:27<00:10,  5.25it/s]
+sift_mnn r=640 kp=2048:  72%|#######2  | 145/200 [00:27<00:10,  5.47it/s]
+sift_mnn r=640 kp=2048:  73%|#######3  | 146/200 [00:27<00:09,  5.78it/s]
+sift_mnn r=640 kp=2048:  74%|#######3  | 147/200 [00:27<00:08,  6.08it/s]
+sift_mnn r=640 kp=2048:  74%|#######4  | 148/200 [00:27<00:08,  6.16it/s]
+sift_mnn r=640 kp=2048:  74%|#######4  | 149/200 [00:28<00:08,  6.28it/s]
+sift_mnn r=640 kp=2048:  75%|#######5  | 150/200 [00:28<00:08,  5.88it/s]
+sift_mnn r=640 kp=2048:  76%|#######5  | 151/200 [00:28<00:08,  5.93it/s]
+sift_mnn r=640 kp=2048:  76%|#######6  | 152/200 [00:28<00:08,  5.90it/s]
+sift_mnn r=640 kp=2048:  76%|#######6  | 153/200 [00:28<00:08,  5.30it/s]
+sift_mnn r=640 kp=2048:  77%|#######7  | 154/200 [00:29<00:08,  5.71it/s]
+sift_mnn r=640 kp=2048:  78%|#######7  | 155/200 [00:29<00:08,  5.46it/s]
+sift_mnn r=640 kp=2048:  78%|#######8  | 156/200 [00:29<00:08,  5.23it/s]
+sift_mnn r=640 kp=2048:  78%|#######8  | 157/200 [00:29<00:08,  4.89it/s]
+sift_mnn r=640 kp=2048:  79%|#######9  | 158/200 [00:29<00:08,  5.21it/s]
+sift_mnn r=640 kp=2048:  80%|#######9  | 159/200 [00:30<00:07,  5.44it/s]
+sift_mnn r=640 kp=2048:  80%|########  | 160/200 [00:30<00:07,  5.08it/s]
+sift_mnn r=640 kp=2048:  80%|########  | 161/200 [00:30<00:08,  4.79it/s]
+sift_mnn r=640 kp=2048:  81%|########1 | 162/200 [00:30<00:07,  5.15it/s]
+sift_mnn r=640 kp=2048:  82%|########1 | 163/200 [00:30<00:07,  5.00it/s]
+sift_mnn r=640 kp=2048:  82%|########2 | 164/200 [00:31<00:06,  5.31it/s]
+sift_mnn r=640 kp=2048:  82%|########2 | 165/200 [00:31<00:06,  5.80it/s]
+sift_mnn r=640 kp=2048:  83%|########2 | 166/200 [00:31<00:06,  5.16it/s]
+sift_mnn r=640 kp=2048:  84%|########3 | 167/200 [00:31<00:06,  5.14it/s]
+sift_mnn r=640 kp=2048:  84%|########4 | 168/200 [00:31<00:06,  4.84it/s]
+sift_mnn r=640 kp=2048:  84%|########4 | 169/200 [00:32<00:06,  4.85it/s]
+sift_mnn r=640 kp=2048:  85%|########5 | 170/200 [00:32<00:06,  4.78it/s]
+sift_mnn r=640 kp=2048:  86%|########5 | 171/200 [00:32<00:06,  4.61it/s]
+sift_mnn r=640 kp=2048:  86%|########6 | 172/200 [00:32<00:05,  5.19it/s]
+sift_mnn r=640 kp=2048:  86%|########6 | 173/200 [00:32<00:04,  5.48it/s]
+sift_mnn r=640 kp=2048:  87%|########7 | 174/200 [00:32<00:04,  5.88it/s]
+sift_mnn r=640 kp=2048:  88%|########7 | 175/200 [00:33<00:04,  6.15it/s]
+sift_mnn r=640 kp=2048:  88%|########8 | 176/200 [00:33<00:03,  6.16it/s]
+sift_mnn r=640 kp=2048:  88%|########8 | 177/200 [00:33<00:04,  5.10it/s]
+sift_mnn r=640 kp=2048:  89%|########9 | 178/200 [00:33<00:04,  4.88it/s]
+sift_mnn r=640 kp=2048:  90%|########9 | 179/200 [00:33<00:03,  5.34it/s]
+sift_mnn r=640 kp=2048:  90%|######### | 180/200 [00:34<00:03,  5.37it/s]
+sift_mnn r=640 kp=2048:  90%|######### | 181/200 [00:34<00:03,  4.85it/s]
+sift_mnn r=640 kp=2048:  91%|#########1| 182/200 [00:34<00:03,  4.63it/s]
+sift_mnn r=640 kp=2048:  92%|#########1| 183/200 [00:34<00:03,  5.02it/s]
+sift_mnn r=640 kp=2048:  92%|#########2| 184/200 [00:34<00:03,  4.94it/s]
+sift_mnn r=640 kp=2048:  92%|#########2| 185/200 [00:35<00:02,  5.63it/s]
+sift_mnn r=640 kp=2048:  93%|#########3| 186/200 [00:35<00:02,  6.35it/s]
+sift_mnn r=640 kp=2048:  94%|#########3| 187/200 [00:35<00:02,  5.53it/s]
+sift_mnn r=640 kp=2048:  94%|#########3| 188/200 [00:35<00:02,  5.71it/s]
+sift_mnn r=640 kp=2048:  94%|#########4| 189/200 [00:35<00:02,  5.43it/s]
+sift_mnn r=640 kp=2048:  95%|#########5| 190/200 [00:35<00:01,  5.19it/s]
+sift_mnn r=640 kp=2048:  96%|#########5| 191/200 [00:36<00:01,  5.42it/s]
+sift_mnn r=640 kp=2048:  96%|#########6| 192/200 [00:36<00:01,  5.99it/s]
+sift_mnn r=640 kp=2048:  96%|#########6| 193/200 [00:36<00:01,  6.53it/s]
+sift_mnn r=640 kp=2048:  97%|#########7| 194/200 [00:36<00:00,  6.60it/s]
+sift_mnn r=640 kp=2048:  98%|#########7| 195/200 [00:36<00:00,  6.71it/s]
+sift_mnn r=640 kp=2048:  98%|#########8| 196/200 [00:36<00:00,  6.56it/s]
+sift_mnn r=640 kp=2048:  98%|#########8| 197/200 [00:37<00:00,  6.25it/s]
+sift_mnn r=640 kp=2048:  99%|#########9| 198/200 [00:37<00:00,  5.94it/s]
+sift_mnn r=640 kp=2048: 100%|#########9| 199/200 [00:37<00:00,  5.15it/s]
+sift_mnn r=640 kp=2048: 100%|##########| 200/200 [00:37<00:00,  4.73it/s]
+sift_mnn r=640 kp=2048: 100%|##########| 200/200 [00:37<00:00,  5.30it/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\src\wbm\sweep.py", line 76, in <module>
+    df = sweep(cfg, a.split, grid, a.matchers, get_device())
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\src\wbm\sweep.py", line 42, in sweep
+    rec = eval_matches(*matches[pid], row["K0"], row["K1"], row["T01"], cfg["seeds"], thr, cfg["epi_thr"])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\src\wbm\core.py", line 17, in eval_matches
+    est = estimate_pose(p0, p1, K0, K1, ransac_thr, seed=s)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Khushi\Downloads\wide-baseline-matching\wbm\src\wbm\pose.py", line 19, in estimate_pose
+    E, mask = cv2.findEssentialMat(n0, n1, np.eye(3), method=cv2.RANSAC, prob=conf, threshold=thr)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cv2.error: OpenCV(5.1.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\mathfuncs.cpp:1601:
+error: (-215:Assertion failed) std::abs(coeffs[n].re) + std::abs(coeffs[n].im) > DBL_EPSILON in function
+'solvePoly'
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Select-String -Path src\wbm\pose.py -Pattern "except cv2.error"
+
+src\wbm\pose.py:28:    except cv2.error:
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m pytest -q tests
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.sweep --split dev --freeze | Tee-Object -FilePath logs\sweep_dev.txt
+ matcher  resize  max_kp  ransac_thr     auc5    auc10    auc20
+sift_mnn     640  2048.0         0.5 0.066522 0.130086 0.213271
+sift_mnn     640  2048.0         1.0 0.076045 0.144457 0.245074
+sift_mnn     640  2048.0         2.0 0.075750 0.148905 0.259402
+sift_mnn    1024  2048.0         0.5 0.085720 0.150110 0.243840
+sift_mnn    1024  2048.0         1.0 0.081476 0.151301 0.244662
+sift_mnn    1024  2048.0         2.0 0.085265 0.165223 0.269046
+    splg     640  2048.0         0.5 0.312763 0.490778 0.647909
+    splg     640  2048.0         1.0 0.345217 0.531106 0.687124
+    splg     640  2048.0         2.0 0.300691 0.504499 0.674667
+    splg    1024  2048.0         0.5 0.484402 0.665625 0.791238
+    splg    1024  2048.0         1.0 0.477349 0.667637 0.798746
+    splg    1024  2048.0         2.0 0.363946 0.569931 0.738739
+   loftr     640     NaN         0.5 0.559291 0.704204 0.804787
+   loftr     640     NaN         1.0 0.506949 0.680763 0.791064
+   loftr     640     NaN         2.0 0.431182 0.627837 0.759058
+   loftr    1024     NaN         0.5 0.647318 0.784846 0.870243
+   loftr    1024     NaN         1.0 0.580524 0.747539 0.849142
+   loftr    1024     NaN         2.0 0.471329 0.673917 0.811628
+FROZEN -> {'resize': 1024, 'max_kp': 2048, 'ransac_thr': 0.5}  written to configs/frozen.yaml  (commit it)
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) Get-Content configs\frozen.yaml | Select-String "frozen|resize|max_kp|ransac_thr|tuned_on"
+git add configs/frozen.yaml configs/config.yaml results/tables/sweep_dev.csv
+git commit -m "Freeze protocol tuned on dev pairs"
+git push
+
+frozen: true
+  resize: 1024
+  max_kp: 2048
+  ransac_thr: 0.5
+  resize:
+  max_kp:
+  ransac_thr:
+  resize:
+  max_kp:
+  ransac_thr:
+      resize: 840
+      ransac_thr: 0.5
+      resize: 1600
+      max_kp: 2048
+      ransac_thr: 1.0
+      resize: 1600
+      max_kp: 2048
+      ransac_thr: 1.0
+      resize: 1600
+      max_kp: 2048
+      ransac_thr: 1.0
+tuned_on: dev split; mean AUC@10 over matchers = 0.5335
+
+
+
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
+(.venv) python -m wbm.run --protocol main --split test --matchers sift_mnn splg loftr
+python -m wbm.run --protocol main --split test --matchers sift_ratio
+
+
+]633;D;0]633;A]633;P;Cwd=C:\x5cUsers\x5cKhushi\x5cDownloads\x5cwide-baseline-matching\x5cwbmPS C:\Users\Khushi\Downloads\wide-baseline-matching\wbm> ]633;B
