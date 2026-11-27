@@ -7,3 +7,7 @@ results_demo/
 results/*/*/*/matches/
 logs/
 report/*.bak
+
+*.aux
+*.log
+*.out

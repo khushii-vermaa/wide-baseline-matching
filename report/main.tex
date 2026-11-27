@@ -1,152 +1,227 @@
+% UCS532 P20 final report. Compile with the official CVPR author kit (cvpr.sty + ieeenat_fullname.bst
+% are NOT needed: the bibliography is inline). If cvpr.sty is absent, a layout-equivalent fallback is used.
+%
+% FIGURE FILE NAMES (full names with extension). Searched in figures/, ../results/figures/ and results/figures/.
+% Check them with: Get-ChildItem results\figures
+%
+
 \documentclass[10pt,twocolumn,letterpaper]{article}
-% ---------------------------------------------------------------------------
-% UCS532 report. Layout approximates CVPR two-column format so it compiles anywhere.
-% For the OFFICIAL template: download the CVPR author kit (cvpr.sty, ieee_fullname.bst) from the CVPR
-% website, put them in this folder, replace the \documentclass/geometry lines with the kit's preamble
-% (\usepackage[review]{cvpr}), and keep everything from "\begin{document}" on.
-% ---------------------------------------------------------------------------
-\usepackage[top=1in,bottom=1in,left=0.875in,right=0.875in,columnsep=0.3125in]{geometry}
-\usepackage{mathptmx}
-\usepackage[T1]{fontenc}
-\usepackage{graphicx,amsmath,amssymb,booktabs,xcolor,caption,url}
-\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
-\captionsetup{font=small,labelfont=bf}
-\setlength{\parskip}{0pt}
-\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}} % redefine as {} for the final version
-\newcommand{\figorbox}[1]{\IfFileExists{figures/#1}{\includegraphics[width=\linewidth]{figures/#1}}%
- {\fbox{\parbox{0.92\linewidth}{\centering\small\vspace{1.2cm}\texttt{\detokenize{#1}} appears after the experiments are run\vspace{1.2cm}}}}}
-\input{generated/macros}
+\newcommand{\figRotation}{fig1_pair_selection.png}
+\newcommand{\figCDF}{fig2_pose_error_cdf.png}
+\newcommand{\figCounts}{fig4_counts_vs_pose.png}
+\newcommand{\figQualA}{fig6_hardest_0022_0.1_0.3_0034.png}
+\newcommand{\figQualB}{fig6_disagree_0015_0.1_0.3_0049.png}
+\IfFileExists{cvpr.sty}{\usepackage[final]{cvpr}}{%
+  \usepackage{times}
+  \usepackage[text={6.875in,8.875in},centering,columnsep=0.3125in]{geometry}
+  \setlength{\parindent}{1em}\setlength{\parskip}{0pt}}
+\usepackage{graphicx,amsmath,amssymb,booktabs,xcolor,url}
+\newcommand{\dg}{^{\circ}}
+\newcommand{\figbox}[3]{%
+ \IfFileExists{figures/#1}{\includegraphics[width=#2]{figures/#1}}{%
+ \IfFileExists{../results/figures/#1}{\includegraphics[width=#2]{../results/figures/#1}}{%
+ \IfFileExists{results/figures/#1}{\includegraphics[width=#2]{results/figures/#1}}{%
+ \IfFileExists{#1}{\includegraphics[width=#2]{#1}}{%
+ \fbox{\parbox[c][#3][c]{\dimexpr#2-2\fboxsep-2\fboxrule\relax}{\centering\footnotesize [missing figure: \detokenize{#1}]}}}}}}}
+\setlength{\textfloatsep}{6pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{6pt plus 2pt minus 2pt}
+\linespread{0.96}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{3pt}
+\renewcommand{\arraystretch}{0.95}
 
 \title{Does the Matcher with the Most Matches Also Recover the Camera Pose?\\
-A Pose-First Comparison of SIFT+MNN, SuperPoint+LightGlue and LoFTR\\ under Extreme Viewpoint Change}
+A Pose-First Comparison of SIFT+MNN, SuperPoint+LightGlue and LoFTR\\under Extreme Viewpoint Change}
 \author{Khushi Verma (1024170065) \quad Kashish Kannojia (1024170342)\\
-CS-UCS532 Computer Vision, Sessional Open Challenge 2026 (Project P20)}
+CS-UCS532 Computer Vision, Sessional Open Challenge 2026 (Project P20)\\
+Code: \url{https://github.com/khushii-vermaa/wide-baseline-matching}}
 \date{}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Papers and demos usually report match counts, inlier counts or match precision. None of these says whether the camera geometry was recovered. We compare three generations of local feature matching, hand-crafted SIFT with mutual-nearest-neighbour matching, SuperPoint with LightGlue, and the detector-free LoFTR, by the quantity a downstream system needs: relative camera pose, scored against MegaDepth ground truth. The $\nTest$ test pairs are the pairs with the largest ground-truth relative rotation in MegaDepth-1500, selected before any matcher was run; all matchers share one resize, one keypoint budget and one RANSAC pose stage, tuned on a disjoint dev set and frozen. We report pose AUC@5$^\circ$/10$^\circ$ with paired-bootstrap intervals, test whether match-count rankings agree with pose rankings, and analyse where the matchers diverge by rotation tier. \abstractfindings{} All claims are limited to wide-baseline outdoor landmark photography.
+Papers and demos usually report match counts, inlier counts or match precision; none of these says whether the camera geometry was recovered.
+We compare hand-crafted SIFT with mutual-nearest-neighbour matching (SIFT+MNN), SuperPoint with LightGlue (SP+LG) and the detector-free LoFTR by the quantity a downstream system needs: relative camera pose, scored against MegaDepth ground truth.
+The 100 test pairs are the MegaDepth-1500 pairs with the largest ground-truth rotation ($28.6\dg$--$58.0\dg$), chosen from geometry alone before any matcher was run. All matchers share one resize, keypoint budget and RANSAC stage, tuned on a disjoint dev set and frozen.
+Pose AUC@10$\dg$ is LoFTR 0.787 $>$ SP+LG 0.653 $>$ SIFT+MNN 0.069, and every paired difference excludes zero. The match-count ranking (LoFTR $>$ SIFT+MNN $>$ SP+LG) disagrees with the pose ranking: SIFT+MNN returns more matches than SP+LG, yet only 5\% are RANSAC inliers.
+Claims are limited to wide-baseline outdoor landmark photography from two landmarks.
 \end{abstract}
 
 \section{Introduction}
-Matching local features between two images of one scene is the first step of structure-from-motion, visual localisation and SLAM. Three generations of matchers now coexist: SIFT~\cite{lowe2004} with mutual nearest neighbour (MNN) matching, learned sparse features such as SuperPoint~\cite{detone2018} matched by attention networks (SuperGlue~\cite{sarlin2020}, LightGlue~\cite{lindenberger2023}), and detector-free dense matching such as LoFTR~\cite{sun2021}. On easy pairs they all work. They disagree most when the viewpoint changes wildly, because perspective distortion, scale change, occlusion and lighting change the appearance of every patch. This is the regime of the Image Matching Challenge~\cite{jin2021}, and the regime studied here.
+Matching local features between two images is the first step of structure-from-motion, visual localisation and SLAM. Three generations of matchers coexist: SIFT~\cite{lowe} with mutual nearest neighbour (MNN) matching, learned sparse features such as SuperPoint~\cite{superpoint} matched by attention networks (SuperGlue~\cite{superglue}, LightGlue~\cite{lightglue}), and detector-free dense matching such as LoFTR~\cite{loftr}. On easy pairs they all work; they diverge when the viewpoint changes wildly, the regime of the Image Matching Challenge~\cite{imc}.
 
-\paragraph{The problem with counting matches.} A matcher can return thousands of mutually consistent matches that lie on a repeated facade or a single plane and still give a wrong relative pose. Published MegaDepth-1500 numbers are averages over pairs of mixed difficulty and differ across papers in image resolution, keypoint budget and RANSAC settings, so they are not directly comparable; an average over easy pairs hides where matchers diverge. Jin et al.~\cite{jin2021} argued for scoring matchers by pose accuracy for exactly this reason.
+\noindent\textbf{The problem with counting matches.} A matcher can return thousands of mutually consistent matches on a repeated facade or a single plane and still give a wrong relative pose. Published MegaDepth-1500 numbers also average pairs of mixed difficulty and differ across papers in resolution, keypoint budget and RANSAC settings. Jin et al.~\cite{imc} argued for scoring matchers by pose accuracy for this reason.
 
-\paragraph{Research question.} On wide-baseline MegaDepth pairs, how do SIFT+MNN, SuperPoint+LightGlue and LoFTR rank by relative-pose accuracy, and does that ranking agree with the ranking implied by match counts?
+\noindent\textbf{Research question.} On wide-baseline MegaDepth pairs, how do SIFT+MNN, SP+LG and LoFTR rank by relative-pose accuracy, and does that ranking agree with the ranking implied by match counts?
 
-\paragraph{Contributions.} (C1) Pose AUC@5$^\circ$ and @10$^\circ$ for the three matchers on $\nTest$ geometry-selected wide-baseline pairs, with confidence intervals. (C2) A test of whether match-count rankings agree with pose-accuracy rankings, overall and per rotation tier. (C3) A rotation-stratified analysis with disagreement and complementarity between classical and learned matchers. (C4) A qualitative panel of the hardest pairs chosen by a pre-declared rule. (C5) A reproducible harness with negative controls and a single-command pipeline. The novelty is in the evaluation design, not in a new matcher: all methods are used as released.
+\noindent\textbf{Contributions.} (C1) Pose AUC@5$\dg$/10$\dg$ for three matchers on 100 geometry-selected wide-baseline pairs with confidence intervals. (C2) A test of whether match-count rankings agree with pose rankings. (C3) A rotation-stratified analysis of disagreement and complementarity. (C4) A qualitative panel chosen by a pre-declared rule. (C5) A reproducible harness with negative controls. The novelty is the evaluation design, not a new matcher: all methods are used as released.
 
 \section{Related Work}
-\paragraph{Local features and matchers.} SIFT~\cite{lowe2004} detects scale-space extrema and describes them with gradient histograms; it is invariant to scale and in-plane rotation by construction. SuperPoint~\cite{detone2018} is a self-supervised fully-convolutional detector and descriptor. SuperGlue~\cite{sarlin2020} and LightGlue~\cite{lindenberger2023} match sparse features with attention; LightGlue adapts its depth and prunes points for speed. LoFTR~\cite{sun2021} skips detection and matches dense coarse features with transformers, refining at fine resolution, which helps in low-texture regions.
-\paragraph{Evaluation.} The Image Matching Challenge~\cite{jin2021} scores matchers through downstream pose and reconstruction quality. LoFTR and LightGlue report pose AUC on the MegaDepth-1500 split~\cite{li2018}. We build on that protocol but fix the settings shared by all matchers and select hard pairs from geometry alone.
-\paragraph{Pose estimation.} Relative pose from known intrinsics uses the essential matrix~\cite{hartley2003} with the five-point solver~\cite{nister2004} inside RANSAC~\cite{fischler1981}.
+\textbf{Matchers.} SIFT~\cite{lowe} detects scale-space extrema and is invariant to scale and in-plane rotation by construction. SuperPoint~\cite{superpoint} is a self-supervised detector-descriptor; SuperGlue~\cite{superglue} and LightGlue~\cite{lightglue} match sparse features with attention, LightGlue adapting its depth for speed. LoFTR~\cite{loftr} skips detection and matches dense coarse features with transformers, which helps in low-texture regions.
+\textbf{Evaluation.} The Image Matching Challenge~\cite{imc} scores matchers by downstream pose quality; LoFTR and LightGlue report pose AUC on MegaDepth-1500 built on MegaDepth~\cite{megadepth}. We follow that protocol but fix the settings shared by all matchers and select hard pairs from geometry alone.
+\textbf{Pose estimation.} Relative pose from known intrinsics uses the essential matrix~\cite{hz} with the five-point solver~\cite{nister} inside RANSAC~\cite{ransac}; ground-truth poses come from SfM~\cite{colmap}.
 
 \section{Benchmark and Pair Selection}
-\paragraph{Data.} MegaDepth~\cite{li2018} provides internet photo collections of landmarks with structure-from-motion poses (COLMAP~\cite{schonberger2016}) and intrinsics. The MegaDepth-1500 evaluation set has 1{,}500 pairs with ground-truth relative pose, drawn from a small number of scenes. The loader assumes world-to-camera poses, so $T_{0\to1}=T_1T_0^{-1}$; this was confirmed in Phase~0. The loader found 1{,}500 pairs in five pair-list files covering two landmark scenes, 0015 and 0022, with ground-truth rotations from $0.3^\circ$ to $58.0^\circ$ (median $10.5^\circ$).
-\paragraph{Geometry-only selection.} For all 1{,}500 pairs we compute the ground-truth relative rotation angle. The test set is the 100 pairs with the largest angle (ties broken by a fixed seed). From the remainder, the dev set is the next 200 pairs by the same rule. The test pairs are split into three equal rotation tiers by rotation angle (tier 1 smallest, tier 3 largest). Selection uses no matcher output, so it cannot favour the matcher used to pick pairs. The selection script and pair list were committed before any matcher was run. The rule was not relaxed: the test pairs have rotations from $28.6^\circ$ to $58.0^\circ$, against a median of $10.5^\circ$ over all 1{,}500 pairs. Fig.~\ref{fig:sel} shows the rotation distribution.
-\begin{figure}[t]\centering\figorbox{fig1_pair_selection.png}\caption{Ground-truth rotation of all 1{,}500 pairs with the test (top 100) and dev thresholds.}\label{fig:sel}\end{figure}
+MegaDepth~\cite{megadepth} provides internet photo collections with SfM poses and intrinsics. MegaDepth-1500 has 1,500 pairs with ground-truth relative pose. The loader assumes world-to-camera poses, $T_{0\to1}=T_1T_0^{-1}$, confirmed in Phase 0. It found 1,500 pairs in five pair-list files from two landmarks, 0015 and 0022, with ground-truth rotations from $0.3\dg$ to $58.0\dg$ (median $10.5\dg$).
 
-\section{Methods}
-\subsection{Matchers}
-All three are used as released, with versions pinned (Table~\ref{tab:env}).
-\textbf{SIFT+MNN:} OpenCV SIFT~\cite{bradski2000} with a cap on keypoints; descriptors matched by mutual nearest neighbour (cross-checked brute force, L2). A ratio-test variant (ratio 0.8) is an ablation. \textbf{SuperPoint+LightGlue:} SuperPoint keypoints with a cap, matched by LightGlue with SuperPoint weights. \textbf{LoFTR:} Kornia~\cite{riba2020} implementation with outdoor weights; dense, so it has no keypoint budget and uses the published confidence threshold. All matchers return pixel coordinates in the original image frame, so ground-truth intrinsics need no rescaling.
-\subsection{Equal-protocol comparison}
-One long-side resize, one keypoint cap (SIFT and SuperPoint) and one RANSAC threshold are shared by all matchers. They are chosen on the 200 dev pairs by maximising mean AUC@10 over matchers (grid: resize $\in\{640,1024\}$, keypoints $\in\{2048,4096\}$, threshold $\in\{0.5,1,2\}$\,px) and then frozen in a version-controlled configuration before any test pair is run. The frozen values are resize \rsz\,px, \mkp{} keypoints and threshold \rthr\,px. Each matcher's published settings run as a sensitivity arm. Match counts are reported but never compared across paradigms as if equal, because dense and sparse matchers count different things.
-\subsection{Pose estimation}
-With normalised coordinates $\mathbf{x}_i,\mathbf{x}'_i$, matches satisfy $\mathbf{x}'^{\top}_i E\,\mathbf{x}_i=0$ with $E=[\mathbf{t}]_\times R$. We estimate $E$ with OpenCV's five-point solver inside RANSAC (threshold divided by the mean focal length), then recover $(R,\mathbf{t})$ by the cheirality check. The same stage, with three fixed seeds that also permute match order, serves every matcher. A pair with no valid pose gets infinite error.
-\subsection{Metrics}
-With estimated $R,\mathbf{t}$ and ground truth $R^*,\mathbf{t}^*$ the pose error is
+\noindent\textbf{Geometry-only selection.} For all 1,500 pairs we compute the ground-truth rotation angle. The test set is the 100 pairs with the largest angle (ties broken by a fixed seed); the dev set is the next 200 by the same rule. The test pairs are split into three equal rotation tiers (tier 1 smallest, tier 3 largest). Selection uses no matcher output, so it cannot favour any matcher. The selection script and pair list were committed before any matcher ran, and the rule was not relaxed: test rotations span $28.6\dg$--$58.0\dg$ against a $10.5\dg$ median overall (Fig.~\ref{fig:rot}).
+
+\begin{figure}[t]\centering
+\figbox{\figRotation}{0.92\columnwidth}{1.3in}
+\caption{Ground-truth rotation of all 1,500 pairs with the test (top 100) and dev thresholds.}\label{fig:rot}
+\end{figure}
+
+\section{Method}
+\textbf{Matchers (all used as released, versions pinned).} \emph{SIFT+MNN}: OpenCV~\cite{opencv} SIFT with a keypoint cap, descriptors matched by cross-checked brute-force L2 (mutual nearest neighbour); a Lowe ratio-test variant (0.8) is the ablation. \emph{SP+LG}: SuperPoint keypoints with a cap, matched by LightGlue with SuperPoint weights. \emph{LoFTR}: Kornia~\cite{kornia} implementation, outdoor weights, published confidence threshold; dense, so no keypoint budget. All matchers return pixel coordinates in the original image frame, so ground-truth intrinsics need no rescaling.
+\emph{Reused:} OpenCV, LightGlue/SuperPoint, Kornia LoFTR. \emph{Ours:} pair selection, evaluation harness, pose-error and AUC code, paired bootstrap, negative controls, analysis and figures.
+
+\noindent\textbf{Equal protocol.} One long-side resize, one keypoint cap (SIFT and SuperPoint) and one RANSAC threshold are shared by all matchers. They were chosen on the 200 dev pairs by maximising mean AUC@10 over matchers (grid: resize $\in\{640,1024\}$, keypoints $\in\{2048,4096\}$, threshold $\in\{0.5,1,2\}$\,px) and frozen in a version-controlled config before any test pair ran: \textbf{resize 1024\,px, 2048 keypoints, 0.5\,px}. Each matcher's published settings run as a sensitivity arm. Match counts are reported but never treated as equivalent across paradigms.
+
+\noindent\textbf{Pose and metrics.} With normalised coordinates, $\mathbf{x}'^{\top}E\,\mathbf{x}=0$, $E=[\mathbf t]_\times R$. We estimate $E$ with OpenCV's five-point solver in RANSAC (threshold divided by the mean focal length) and recover $(R,\mathbf t)$ by the cheirality check. The same stage, with three fixed seeds (0, 1, 2) that also permute match order, serves every matcher; a pair with no valid pose gets infinite error. The pose error is
 \begin{equation}
-e=\max(\epsilon_R,\epsilon_t),\;\; \epsilon_R=\arccos\tfrac{\operatorname{tr}(R^{*\top}R)-1}{2},\;\; \epsilon_t=\arccos|\hat{\mathbf t}\!\cdot\!\hat{\mathbf t}^*|.
+\begin{gathered}e=\max(\epsilon_R,\epsilon_t),\\ \epsilon_R=\arccos\tfrac{\mathrm{tr}(R^{*\top}R)-1}{2},\;\; \epsilon_t=\arccos|\hat{\mathbf t}\!\cdot\!\hat{\mathbf t}^{*}|.\end{gathered}
 \end{equation}
-Translation is known only up to scale and sign. With $\mathrm{recall}(x)$ the fraction of pairs with $e\le x$,
-\begin{equation}
-\mathrm{AUC}(\tau)=\tfrac1\tau\!\int_0^\tau \mathrm{recall}(x)\,dx,\;\; \tau\in\{5^\circ,10^\circ\}\ (20^\circ\text{ secondary}).
-\end{equation}
-The integral uses the trapezoid rule over the sorted errors, as in the LoFTR and LightGlue evaluations, so values are comparable with published tables. We report the mean over the three RANSAC seeds. \emph{Epipolar precision} is the fraction of matches whose squared Sampson distance~\cite{hartley2003} under the ground-truth geometry, in normalised coordinates, is below $5\times10^{-4}$. The \emph{disagreement rate} between matchers $a,b$ in a tier is
-\begin{equation}
-D_{ab}=\big|\{\text{pairs}:[e_a<10^\circ]\neq[e_b<10^\circ]\}\big|\,/\,|\text{pairs in tier}|,
-\end{equation}
-where $e$ is the median over seeds. \emph{Success} means $e<10^\circ$.
-\subsection{Statistics}
-With 100 pairs, differences of a few AUC points often fall inside the confidence interval. We use the percentile bootstrap~\cite{efron1979} over pairs (1{,}000 resamples), with the same resampled pairs for all matchers so that differences are paired. A difference is called real only if its 95\% interval excludes zero.
+With $\mathrm{recall}(x)$ the fraction of pairs with $e\le x$, $\mathrm{AUC}(\tau)=\tfrac1\tau\int_0^\tau \mathrm{recall}(x)\,dx$ for $\tau\in\{5\dg,10\dg\}$ (20$\dg$ secondary), computed with the trapezoid rule over sorted errors as in the LoFTR and LightGlue evaluations (this differs slightly from a step-function integral; both are unit-tested). We report the mean over seeds. \emph{Epipolar precision} is the fraction of matches whose squared Sampson distance~\cite{hz} under ground-truth geometry, in normalised coordinates, is below $5\times10^{-4}$. A pair is \emph{solved} if its median error over seeds is below $10\dg$, and the disagreement rate between matchers $a,b$ in a tier is $D_{ab}=|\{[e_a{<}10\dg]\neq[e_b{<}10\dg]\}|/|\text{pairs in tier}|$.
+
+\noindent\textbf{Statistics.} With 100 pairs, differences of a few AUC points often fall inside the interval. We use the percentile bootstrap~\cite{efron} over pairs (1,000 resamples) with the same resampled pairs for all matchers, so differences are paired; a difference is called real only if its 95\% interval excludes zero.
 
 \section{Experimental Setup}
-\paragraph{Splits and discipline.} There is no training. Leakage control means keeping tuning away from the test pairs: resize, keypoint cap, RANSAC threshold and the epipolar threshold are fixed on the dev pairs. The 1{,}500-pair reproduction is a harness check, not used to choose any setting.
-\paragraph{Arms.} A: matchers ranked by match count, inlier count and epipolar precision. B: same matchers and pairs, ranked by AUC. C: A versus B overall and per tier, and per-pair inlier ratio versus pose success. D: AUC and $D_{ab}$ per tier, pairs solved by exactly one matcher, best-of-three oracle. E: SIFT MNN versus ratio test, resize, keypoint cap, RANSAC threshold. F (stretch): in-plane rotation of one image by $0,45,90,135,180^\circ$ with the ground-truth pose updated.
-\paragraph{Negative controls.} Built before results: unit tests of pose error and AUC against hand-computed values; a random-match baseline, which must give AUC near zero; pair-order symmetry, where matching $(A,B)$ and $(B,A)$ must give consistent errors; and a zero-baseline sanity check on small-rotation pairs where learned matchers must succeed. Outputs on dev pairs: random matches gave AUC@10 $=0.0000$. In the first version of the symmetry check (15 dev pairs, all pairs included) the median gap between $e_{AB}$ and $e_{BA}$ was $16.28^\circ$ for SIFT+MNN and $0.80^\circ$ for LoFTR. The SIFT+MNN gap came from pairs on which it failed, with arbitrary large errors in either direction, not from the pipeline, so the check was redefined to use only pairs on which both directions succeed, and only the learned matchers gate the outcome; this change was made on dev pairs before any test pair was run. With the redefined check, LoFTR succeeded in both directions on \todo{N} of 20 pairs, the success status agreed on \todo{P}\% of pairs and the median gap was \todo{G}$^\circ$ (copy N, P and G from \texttt{logs/controls.txt}). On the five smallest-rotation non-test pairs the LoFTR errors were $1.16^\circ$, $0.55^\circ$, $5.35^\circ$, $11.17^\circ$ and $4.46^\circ$ (median $4.46^\circ$; one pair above $10^\circ$) \todo{confirm these five values against the last log}.
-\paragraph{Environment.}
-\begin{table}[t]\centering\small
-\begin{tabular}{ll}\toprule Item & Value\\\midrule
-Python / PyTorch & 3.12 / 2.15.0 (CPU build)\\ Kornia / LightGlue (commit) & \todo{from \texttt{pip list} and \texttt{pip freeze}}\\ OpenCV / NumPy & 5.1.0 / 2.5.4\\ Hardware & laptop CPU (\todo{CPU model}); reproduction: \todo{Colab GPU}\\ Seeds & 0, 1, 2\\ \bottomrule\end{tabular}
-\caption{Pinned environment.}\label{tab:env}\end{table}
+No training is involved, so leakage control means keeping tuning off the test pairs: resize, keypoint cap and RANSAC threshold are fixed on dev; the 1,500-pair reproduction is a harness check and chooses no setting. The main experiment ran on a laptop CPU and the 1,500-pair reproduction on a Colab T4 (Table~\ref{tab:env}); seeds 0, 1, 2 are printed in every log.
+
+\begin{table}[t]\centering\footnotesize
+\begin{tabular}{@{}lll@{}}\toprule Item & Laptop (main) & Colab (reproduction)\\\midrule
+Python & 3.12 & 3.13\\
+PyTorch & 2.15.0 (CPU) & 2.14.1 (CUDA 13.0)\\
+Kornia & 0.9.2 & 0.9.2\\
+LightGlue & \texttt{5a650c4} & GitHub master, tag 0.0\\
+OpenCV (headless) & 5.1.0 & 5.0.0.93\\
+NumPy & 2.5.4 & 2.4.6\\
+Hardware & i5-1340P CPU & Tesla T4 GPU\\
+RANSAC seeds & \multicolumn{2}{l}{0, 1, 2}\\ \bottomrule\end{tabular}
+\caption{Environments used. The main experiment ran on the laptop and the 1{,}500-pair reproduction on Colab.}\label{tab:env}\end{table}
+
+\noindent\textbf{Analysis arms.} A: matchers ranked by match count, inlier count and epipolar precision. B: ranked by AUC. C: A versus B, overall and per tier, plus per-pair inlier ratio versus pose. D: AUC and $D_{ab}$ per tier, pairs solved by exactly one matcher, best-of-three oracle. E (ablation): SIFT MNN versus ratio test; resize, keypoint cap, RANSAC threshold.
+
+\noindent\textbf{Negative controls (built before results).} Unit tests of pose error and AUC against hand-computed values; a random-match baseline; pair-order symmetry; a zero-baseline check. Random matches gave AUC@10 $=0.0000$ on dev. In the first symmetry check (15 dev pairs, all included) the median gap between $e_{AB}$ and $e_{BA}$ was $16.28\dg$ for SIFT+MNN and $0.80\dg$ for LoFTR. The SIFT+MNN gap came from pairs on which it fails, with arbitrary large errors in either direction, so we redefined the check to use only pairs where both directions succeed and let only the learned matchers gate the outcome; this change was made on dev pairs before any test pair ran. With it, LoFTR succeeded in both directions on 18 of 20 pairs, success status agreed on 100\% and the median gap was $0.81\dg$ (SIFT+MNN, diagnostic only: 2 of 20 pairs, 85\% agreement, $5.21\dg$). On the five smallest-rotation non-test pairs the LoFTR errors were $1.16\dg$, $0.55\dg$, $5.35\dg$, $11.17\dg$ and $4.46\dg$ (median $4.46\dg$; one pair above $10\dg$).
 
 \section{Results}
 \subsection{Harness validation}
-Table~\ref{tab:repro} compares our 1{,}500-pair pose AUC under each matcher's published protocol with the published values. Before running the reproduction we set a tolerance of $\pm3$ AUC points for LoFTR and a wider allowance for SP+LG, because our harness uses OpenCV RANSAC while the published numbers were computed with other robust estimators. \todo{After the Colab run: state for each matcher whether it is within tolerance; if not, what was checked (resize, keypoint budget, RANSAC threshold, pair list, pose convention).}
-\begin{table}[t]\centering\small\input{generated/table_repro}\caption{Reproduction of published MegaDepth-1500 pose AUC.}\label{tab:repro}\end{table}
+We ran each learned matcher on all 1,500 pairs under its published protocol (on Colab, Table~\ref{tab:env}), using mean AUC over the three RANSAC seeds. Before running we set a tolerance of $\pm3$ AUC points for LoFTR and a wider allowance for SP+LG, because our harness uses OpenCV RANSAC whereas published numbers used other robust estimators. LoFTR (resize 840, RANSAC 0.5\,px) reached AUC@5/10/20 of 51.2/68.0/80.3 against published 52.8/69.2/81.2, a gap of $-1.6$/$-1.2$/$-0.9$ points, inside the $\pm3$ tolerance. SP+LG (resize 1600, 2048 keypoints, RANSAC 1.0\,px) reached 42.9/61.8/76.7. The published SP+LG values are 49.9/67.0/80.1, so our gap is $-7.0$/$-5.2$/$-3.4$ points: lower than published in all three columns and outside a $\pm3$-point band. The same harness reproduces LoFTR within 3 points, so the pair list, pose convention and pose-error code are unlikely causes. We used resize 1600, 2048 keypoints and RANSAC 1.0\,px; the remaining candidates are the robust estimator (OpenCV RANSAC against the estimator behind the published number) and details of keypoint extraction, which we did not isolate. We therefore treat our absolute SP+LG AUCs as possibly conservative; the ranking claims in Sec.~6.2 use only matched settings.
+
 \subsection{Main result}
-\begin{table*}[t]\centering\footnotesize\input{generated/table_main}
-\caption{Main table on the \nTest{} test pairs (equal protocol: resize \rsz, \mkp{} keypoints, RANSAC \rthr\,px). AUC with 95\% paired-bootstrap interval; ``Matches'' and ``Inl.\ ratio'' are diagnostics, not comparable across paradigms.}\label{tab:main}\end{table*}
-\begin{figure}[t]\centering\figorbox{fig2_pose_error_cdf.png}\caption{Pose-error CDF per matcher; the area under each curve up to the cut-off is the AUC.}\label{fig:cdf}\end{figure}
-\input{generated/findings}
-\begin{table}[t]\centering\footnotesize\input{generated/table_diffs}\caption{Paired AUC differences with 95\% bootstrap intervals; * marks intervals excluding zero.}\label{tab:diff}\end{table}
-\subsection{Counts versus pose}
-\begin{figure*}[t]\centering\figorbox{fig4_counts_vs_pose.png}\caption{Left, middle: mean match count and AUC@10 per matcher. Right: per-pair inlier ratio against pose error.}\label{fig:counts}\end{figure*}
-\subsection{Rotation tiers, disagreement and complementarity}
-\begin{table*}[t]\centering\footnotesize\input{generated/table_tiers}\caption{AUC@10 by tier with intervals, and disagreement $D_{ab}$ (S = SIFT+MNN, L = SP+LG, F = LoFTR).}\label{tab:tiers}\end{table*}
-\begin{figure}[t]\centering\figorbox{fig3_auc_by_tier.png}\caption{AUC@10 per tier with confidence bands.}\label{fig:tier}\end{figure}
-\begin{figure}[t]\centering\figorbox{fig5_complementarity.png}\caption{Pairs solved by none/one/two/all matchers and disagreement rate per tier.}\label{fig:comp}\end{figure}
-\subsection{Per landmark and per seed}
-\begin{table}[t]\centering\footnotesize\input{generated/table_scene}\caption{AUC@10 per landmark with 95\% bootstrap intervals. The test set mixes pairs from landmarks 0015 and 0022; small per-landmark samples give wide intervals.}\label{tab:scene}\end{table}
-\begin{table}[t]\centering\footnotesize\input{generated/table_seed}\caption{Pose AUC for each RANSAC seed (the main table reports the mean over seeds).}\label{tab:seed}\end{table}
-\subsection{Sensitivity: matcher or protocol?}
-Table~\ref{tab:sens} gives AUC@10 averaged over the other settings; Table~\ref{tab:ratio} compares MNN with the ratio test. \todo{Read \texttt{results/tables/sweep\_test.csv}: give the AUC@10 range per matcher over the grid, say whether the ranking LoFTR $>$ SP+LG $>$ SIFT+MNN holds in every setting, and what the ratio test changes (Table~\ref{tab:ratio}).}
-\begin{table}[t]\centering\footnotesize\input{generated/table_sens}\caption{Sensitivity of AUC@10 to resize, keypoint cap and RANSAC threshold (test pairs, after freezing).}\label{tab:sens}\end{table}
-\begin{table}[t]\centering\footnotesize\input{generated/table_ratio}\caption{SIFT: mutual nearest neighbour versus ratio test.}\label{tab:ratio}\end{table}
-\subsection{Qualitative panel}
-Fig.~\ref{fig:qual} shows two panels chosen by a pre-declared rule: the largest-rotation test pairs and pairs where the matchers disagree (ordered by pair id). Each panel has one row per matcher; matches are green if epipolar-consistent under the ground truth and red otherwise, and at most 150 randomly chosen matches are drawn per row.
+\begin{table*}[t]\centering\small
+\begin{tabular}{lccccccc c}
+\toprule
+Matcher & AUC@5 & AUC@10 & AUC@20 & Med.\ err. & Succ. & Matches & Inl.\ ratio & Epi.\ prec.\\
+\midrule
+SIFT+MNN & 0.037 [0.02, 0.05] & 0.069 [0.04, 0.10] & 0.123 & $62.4\dg$ & 11\% & 458 & 0.05 & 0.31\\
+SP+LG & 0.484 [0.42, 0.54] & 0.653 [0.59, 0.71] & 0.778 & $2.0\dg$ & 86\% & 364 & 0.31 & 1.00\\
+LoFTR & 0.650 [0.59, 0.70] & 0.787 [0.74, 0.83] & 0.878 & $1.1\dg$ & 95\% & 1334 & 0.51 & 0.94\\
+\bottomrule
+\end{tabular}
+\caption{Main table on the 100 test pairs (equal protocol: resize 1024, 2048 keypoints, RANSAC 0.5\,px). AUC with 95\% paired-bootstrap interval; ``Matches'' and ``Inl.\ ratio'' are diagnostics and are not comparable across paradigms.}\label{tab:main}
+\end{table*}
+Ranking by AUC@10 gives LoFTR $>$ SP+LG $>$ SIFT+MNN (Table~\ref{tab:main}); AUC@5 gives the same order. All paired differences exclude zero. AUC@10: SIFT+MNN$-$SP+LG $-0.583$ [$-0.642$, $-0.528$]; SIFT+MNN$-$LoFTR $-0.717$ [$-0.765$, $-0.669$]; SP+LG$-$LoFTR $-0.134$ [$-0.173$, $-0.093$]. AUC@5: $-0.448$ [$-0.509$, $-0.389$], $-0.613$ [$-0.667$, $-0.561$], $-0.165$ [$-0.212$, $-0.121$]. No difference is left inside its interval, so at $n=100$ this benchmark separates all three matchers. Across the three RANSAC seeds the largest spread in AUC@10 for any matcher is 0.028.
+
+\begin{figure}[t]\centering
+\figbox{\figCDF}{0.85\columnwidth}{1.9in}
+\caption{Pose-error CDF per matcher; the area under each curve up to the cut-off is the AUC.}\label{fig:cdf}
+\end{figure}
+
+\subsection{Do counts predict pose?}
+Ranking by mean match count gives LoFTR $>$ SIFT+MNN $>$ SP+LG; by mean inlier count LoFTR $>$ SP+LG $>$ SIFT+MNN; by epipolar precision SP+LG $>$ LoFTR $>$ SIFT+MNN; by AUC@10 LoFTR $>$ SP+LG $>$ SIFT+MNN. The match-count ranking disagrees with the pose ranking overall and in every tier (dense and sparse counts are not equivalent, so we read this as a caution about counts, not as a like-for-like comparison). SIFT+MNN returns more matches than SP+LG (458 vs.\ 364) but only 5\% are RANSAC inliers against 31\%, and its AUC@10 is about a tenth of SP+LG's. LoFTR has the most matches, the highest inlier ratio (0.51) and the best AUC, so for LoFTR counts and accuracy agree; across matchers they do not. Epipolar precision ranks SP+LG above LoFTR while LoFTR has the higher AUC, so precision alone does not decide the ranking either; we did not test why. Across pairs, pose accuracy rises with inlier ratio (Spearman 0.64, 0.63, 0.64 for SIFT+MNN, SP+LG, LoFTR; Fig.~\ref{fig:counts}), but the ratio comes from the same RANSAC fit as the pose, so this is partly circular and not an independent confidence score.
+
 \begin{figure*}[t]\centering
-\includegraphics[width=0.48\textwidth]{figures/fig6_hardest_0022_0.1_0.3_0034.png}\hfill
-\includegraphics[width=0.48\textwidth]{figures/fig6_disagree_0015_0.1_0.3_0049.png}
-\caption{Qualitative panels. Left: a largest-rotation pair (0022\_0.1\_0.3\_0034). Right: a pair on which the matchers disagree (0015\_0.1\_0.3\_0049). Rows: SIFT+MNN, SP+LG, LoFTR. Green: epipolar-consistent match; red: inconsistent.}\label{fig:qual}\end{figure*}
-\todo{Group the failures you can see in the two panels (and the other fig6 files in \texttt{results/figures}) by cause, for example repeated structure, large scale or viewpoint change, occlusion or illumination, too few matches. One line per pair, describing only what the panel shows.}
-\subsection{Stretch: in-plane rotation (Arm F)}
-\todo{Include only if the sweep was run; otherwise delete this subsection and Table~\ref{tab:rot}.}
-\begin{table}[t]\centering\footnotesize\input{generated/table_rotation}\caption{AUC@10 when image 2 is rotated in-plane with the ground-truth pose updated.}\label{tab:rot}\end{table}
+\figbox{\figCounts}{0.85\textwidth}{1.8in}
+\caption{Left, middle: mean match count and AUC@10 per matcher. Right: per-pair inlier ratio against pose error.}\label{fig:counts}
+\end{figure*}
 
-\section{Discussion}
-\label{sec:expect}
-\paragraph{Pre-declared expectations.} The four expectations below were committed in \texttt{66c2a11} (21 November 2026), before the protocol freeze and before any test pair was run: (1) SIFT+MNN has the lowest AUC@10 of the three. (2) The count ranking differs from the AUC ranking in at least one tier, with a dense matcher with many matches the likeliest case. (3) $D_{ab}$ rises from the easiest to the hardest tier. (4) The order of the two learned matchers is uncertain, and a difference is claimed only if the paired interval excludes zero.
-Expectation (1) held (AUC@10 0.069 against 0.653 and 0.787). Expectation (2) held, but not for the predicted reason: the count ranking (LoFTR $>$ SIFT+MNN $>$ SP+LG) differs from the AUC ranking (LoFTR $>$ SP+LG $>$ SIFT+MNN) overall and in every tier, yet LoFTR, the dense matcher, has both the most matches and the best AUC; the mismatch comes from SIFT+MNN, which returns more matches than SP+LG and is far less accurate. Expectation (3) held only in part: $D_{ab}$ is higher in the largest-rotation tier than in the smallest for two of the three matcher pairs, but is strictly increasing across the three tiers for none. Expectation (4) held in the sense that we claim an order only where the interval excludes zero, and it does: SP+LG minus LoFTR is $-0.134$ at AUC@10 (95\% interval $[-0.173, -0.093]$) and $-0.165$ at AUC@5 ($[-0.212, -0.121]$), so we claim that LoFTR is more accurate than SP+LG on these pairs.
+\subsection{Rotation tiers, landmarks, disagreement}
+\begin{table*}[t]\centering\small
+\begin{tabular}{llccc ccc}
+\toprule
+Group & Rot. & SIFT+MNN & SP+LG & LoFTR & $D$ S/L & $D$ S/F & $D$ L/F\\
+\midrule
+Tier 1 ($n{=}34$) & $29$--$31\dg$ & 0.11 [0.06, 0.16] & 0.76 [0.70, 0.81] & 0.87 [0.82, 0.89] & 0.82 & 0.85 & 0.03\\
+Tier 2 ($n{=}33$) & $32$--$36\dg$ & 0.06 [0.01, 0.12] & 0.59 [0.47, 0.71] & 0.72 [0.61, 0.82] & 0.67 & 0.79 & 0.12\\
+Tier 3 ($n{=}33$) & $36$--$58\dg$ & 0.05 [0.01, 0.10] & 0.63 [0.52, 0.73] & 0.79 [0.71, 0.86] & 0.76 & 0.88 & 0.12\\
+Landmark 0015 ($n{=}30$) & -- & 0.09 [0.03, 0.16] & 0.58 [0.48, 0.67] & 0.73 [0.62, 0.83] & -- & -- & --\\
+Landmark 0022 ($n{=}70$) & -- & 0.06 [0.04, 0.10] & 0.69 [0.62, 0.75] & 0.82 [0.76, 0.86] & -- & -- & --\\
+\bottomrule
+\end{tabular}
+\caption{AUC@10 with 95\% bootstrap intervals by rotation tier and by landmark, and disagreement $D_{ab}$ per tier (S = SIFT+MNN, L = SP+LG, F = LoFTR).}\label{tab:tier}
+\end{table*}
+The tiers split the test pairs by ground-truth rotation only, so they are rotation tiers, not a complete difficulty scale. The ranking SIFT+MNN $<$ SP+LG $<$ LoFTR holds in every tier and on both landmarks (Table~\ref{tab:tier}), but tier intervals overlap or touch, so we do not claim that any matcher's AUC@10 changes with rotation. Performance is not monotone: both learned matchers score lowest in tier 2 (SP+LG 0.59, LoFTR 0.72) and higher in tier 3 (0.63, 0.79). The landmark mix per tier is similar (tier 1: 9/25 pairs from 0015/0022; tier 2: 10/23; tier 3: 11/22), so it does not explain the dip, and we leave it unexplained at this sample size.
+$D_{ab}$ involving SIFT+MNN is high in every tier because SIFT+MNN fails on most pairs. Between the learned matchers $D_{ab}$ is 0.03 (1 of 34 pairs), 0.12 (4 of 33) and 0.12 (4 of 33); in tier 3 all four disagreements are pairs solved only by LoFTR, and with counts this small we read no trend into them. In tier 3, 1 pair is solved by no matcher, 4 by exactly one (0/0/4 for SIFT+MNN/SP+LG/LoFTR), 25 by two and 3 by all three. A best-of-three oracle that uses ground truth reaches AUC@5/10/20 of 0.691/0.815/0.896, only 0.028 above LoFTR alone at AUC@10, an upper bound on any practical selection rule, so we do not claim useful complementarity.
 
-\paragraph{Why counts can mislead.} Match count does not track pose accuracy across matchers. SIFT+MNN returns more matches per pair on average than SP+LG (458 against 364), but only 5\% of them are RANSAC inliers against 31.5\%, and its AUC@10 is 0.069 against 0.653 (Table~\ref{tab:main}). LoFTR returns the most matches (1334 on average) and also has the highest inlier ratio (0.505) and AUC@10 (0.787), so for LoFTR counts and accuracy agree; across the three matchers they do not. Epipolar precision ranks SP+LG above LoFTR, while LoFTR has the higher AUC, so precision alone does not decide the pose ranking either; we did not test why. Across pairs, pose accuracy rises with the inlier ratio (Fig.~\ref{fig:counts}, right; Spearman correlation 0.64, 0.63 and 0.64 for SIFT+MNN, SP+LG and LoFTR), but the inlier ratio comes from the same RANSAC fit as the pose, so this is partly circular and is not an independent confidence score.
-\todo{Add two or three sentences from the panels in Fig.~\ref{fig:qual}. Read the title bar of each row: name the pair, then give for each matcher the number of matches and the percentage that are epipolar-consistent, for example ``On PAIR, SIFT+MNN returns N matches of which P\% are epipolar-consistent, against N and P\% for LoFTR.'' Describe only what you can see. State a cause of SIFT+MNN's failures, such as repeated structure, only as a possibility and only if you looked at the pair.}
+\subsection{Ablation: matcher or protocol?}
+\begin{table}[t]\centering\small
+\begin{tabular}{lccc}
+\toprule
+AUC@10 (mean over others) & SIFT & SP+LG & LoFTR\\
+\midrule
+resize 640 & 0.063 & 0.470 & 0.655\\
+resize 840 & 0.071 & 0.570 & 0.714\\
+resize 1024 & 0.072 & 0.623 & 0.752\\
+resize 1600 & 0.051 & 0.685 & 0.758\\
+keypoints 1024 & 0.048 & 0.570 & --\\
+keypoints 2048 & 0.067 & 0.593 & --\\
+keypoints 4096 & 0.078 & 0.598 & --\\
+RANSAC thr.\ 0.5\,px & 0.060 & 0.593 & 0.751\\
+RANSAC thr.\ 1\,px & 0.065 & 0.611 & 0.729\\
+RANSAC thr.\ 2\,px & 0.067 & 0.557 & 0.679\\
+\bottomrule
+\end{tabular}
+\caption{Sensitivity of AUC@10 on the test pairs after freezing (reported, never used to choose settings). SIFT: ratio test 0.8 instead of MNN raises AUC@5/10/20 from 0.037/0.069/0.123 to 0.080/0.118/0.160.}\label{tab:sens}
+\end{table}
+Averaged over the other settings (Table~\ref{tab:sens}), AUC@10 ranges from 0.048 to 0.078 for SIFT+MNN, 0.470 to 0.685 for SP+LG and 0.655 to 0.758 for LoFTR. LoFTR $>$ SP+LG $>$ SIFT+MNN holds in every row, but the two learned ranges overlap: SP+LG at 1600\,px (0.685) beats LoFTR at 640\,px (0.655). The ranking is therefore a statement about matched settings, which is why an equal protocol matters. Resolution matters most: from 640 to 1600\,px SP+LG gains 0.215 and LoFTR 0.103, while SIFT+MNN does not improve. Larger RANSAC thresholds hurt LoFTR (0.751 at 0.5\,px, 0.679 at 2\,px). The ratio test lifts SIFT+MNN from 0.069 to 0.118 at AUC@10 but remains far below SP+LG (0.653).
 
-\paragraph{Where the matchers diverge.} The ranking SIFT+MNN $<$ SP+LG $<$ LoFTR holds in all three rotation tiers (Table~\ref{tab:tiers}), but the tier intervals overlap or touch, so we do not claim that any matcher's AUC@10 changes with rotation. Performance is not monotone in rotation: both learned matchers score lowest in tier 2 (SP+LG 0.59, LoFTR 0.72) and higher in tier 3 (0.63 and 0.79); the landmark mix per tier is similar, so it does not explain this, and we leave the dip unexplained at this sample size. Between the two learned matchers, $D_{ab}$ is 0.03 (1 of 34 pairs), 0.12 (4 of 33) and 0.12 (4 of 33); in tier 3 all four disagreements are pairs solved only by LoFTR, and with counts this small we read no trend into them. $D_{ab}$ involving SIFT+MNN is high in every tier because SIFT+MNN fails on most pairs. A best-of-three oracle reaches AUC@10 of 0.815 against 0.787 for LoFTR alone; this gain of 0.028 is an upper bound on any practical selection rule, so we do not claim useful complementarity. The ranking is the same on both landmarks.
+\section{Failure Analysis}
+SIFT+MNN solves 11\% of test pairs (median error $62.4\dg$), SP+LG 86\% and LoFTR 95\%. Fig.~\ref{fig:qual} shows two panels chosen by a pre-declared rule: the largest-rotation test pairs and pairs where the matchers disagree (ordered by pair id); matches are green if epipolar-consistent under ground truth and red otherwise, with at most 150 random matches drawn per row.
+On pair 0022\_0.1\_0.3\_0034 (largest rotation), SIFT+MNN returns 452 matches of which 14\% are epipolar-consistent, against 158 matches (100\%) for SP+LG and 485 (89\%) for LoFTR; most SIFT+MNN lines join unrelated parts of the gate. On pair 0015\_0.1\_0.3\_0049, where the matchers disagree, SIFT+MNN returns 692 matches (27\% consistent), SP+LG 319 (100\%) and LoFTR 609 (81\%); LoFTR is less consistent than SP+LG here, so counts and consistency again rank the matchers differently. Both scenes contain repeated structure (columns of the gate, the basilica facade), which may contribute to SIFT+MNN's failures, but we did not test this.
 
-\paragraph{Threats to validity.} The learned matchers were trained on MegaDepth data, which favours them over SIFT+MNN, a hand-crafted method with no learned prior. In the LoFTR setup the two test landmarks (scenes 0015 and 0022) are reserved for validation rather than used for training \todo{confirm in the LoFTR paper}. LightGlue's fine-tuning excludes scenes from the Image Matching Challenge validation and test sets, and we did not verify whether the two test landmarks are among them. Ground-truth poses come from structure-from-motion, not a metrology rig, so errors near $1^\circ$ are below the reliability of the labels and are not over-interpreted. The test set is the widest available in MegaDepth-1500 (rotation $28.6^\circ$ to $58.0^\circ$), but most pairs lie in a narrow band (tiers 1 and 2 together span $29^\circ$ to $36^\circ$), so we make no claim about larger rotations. The 100 pairs come from two landmarks (30 from 0015, 70 from 0022) and pairs from one landmark are correlated, so intervals that resample pairs as independent may be somewhat too narrow. The spread across RANSAC seeds is at most 0.028 in AUC@10, so the sampling of pairs, not RANSAC randomness, is the main source of uncertainty. At AUC@5 and AUC@10 the paired intervals for LoFTR against SP+LG exclude zero, so this benchmark does separate the two learned matchers. Timing was measured on a laptop CPU and is not comparable with GPU timings. Poses are estimated with OpenCV RANSAC, whereas published numbers were computed with other robust estimators, so absolute AUCs may differ from published values.
+\begin{figure*}[t]\centering
+\figbox{\figQualA}{0.44\textwidth}{2.8in}\hfill\figbox{\figQualB}{0.44\textwidth}{2.8in}
+\caption{Qualitative panels. Left: a largest-rotation pair (0022\_0.1\_0.3\_0034). Right: a pair where the matchers disagree (0015\_0.1\_0.3\_0049). Rows: SIFT+MNN, SP+LG, LoFTR. Green: epipolar-consistent; red: inconsistent.}\label{fig:qual}
+\end{figure*}
 
-\section{Limitations}
-Only 100 test pairs from two landmark scenes (30 and 70 pairs): conclusions apply to wide-baseline outdoor landmark photography, not indoor, night or aerial imagery. Ground-truth poses carry structure-from-motion error. The learned matchers were trained on MegaDepth scenes. Three off-the-shelf matchers were used as released; none was proposed or retrained. Pose AUC is one downstream task and does not cover localisation or reconstruction quality directly. Rotating images in place (Arm F) crops corners and assumes the principal point is near the image centre.
+\section{Changes from the Proposal}
+\textbf{Gates.} Gate 1 (harness and negative controls) passed, after the one redefinition of the symmetry check described in Sec.~5. Gate 2: all three matchers ran end to end on the 100 test and 200 dev pairs and the protocol was frozen on dev before the test run; the 1,500-pair reproduction ran on Colab. LoFTR reproduced the published MegaDepth-1500 AUC@5/10/20 within the $\pm3$-point tolerance (51.2/68.0/80.3 against 52.8/69.2/81.2). SP+LG did not reproduce within tolerance (gaps $-7.0$/$-5.2$/$-3.4$ points against the published 49.9/67.0/80.1); we checked resize, keypoint budget, RANSAC threshold, pair list and pose convention, and report the gap as a limitation rather than a pass. Gate 3 (AUC with paired intervals, arms A--E, qualitative panel, tier and landmark reversals) is complete; no ranking reverses between tiers or landmarks.
+\textbf{Dropped.} The stretch objective O7 (in-plane rotation sweep, Arm F) was dropped first, as the proposal's drop order specifies; no result is claimed for it. The ``top 100 by rotation'' rule was not relaxed.
+\textbf{Deviations.} SIFT is OpenCV's implementation; RANSAC seeds permute the matches because OpenCV's RANSAC uses a fixed internal generator; the dev grid ($\{640,1024\}\times\{2048,4096\}\times\{0.5,1,2\}$) is smaller than the sensitivity grid reported on test; AUC uses the trapezoid convention of the published tables rather than a step-function integral; the symmetry control was redefined on dev as described above.
+\textbf{Pre-declared expectations versus outcome.} The four expectations were recorded in the proposal (18 October) and committed in 66c2a11 (21 November 2026), before the protocol freeze and any test pair. (1) SIFT+MNN has the lowest AUC@10: \emph{held} (0.069 vs.\ 0.653 and 0.787). (2) The count ranking differs from the AUC ranking in at least one tier, a dense matcher with many matches being the likeliest case: \emph{held, but not for the predicted reason}. The ranking differs overall and in every tier, yet LoFTR, the dense matcher, has both the most matches and the best AUC; the mismatch comes from SIFT+MNN, which returns more matches than SP+LG and is far less accurate. (3) $D_{ab}$ rises from the easiest to the hardest tier: \emph{held only in part}. It is higher in tier 3 than in tier 1 for two of three matcher pairs, but strictly increasing across tiers for none. (4) The order of the two learned matchers is uncertain and claimed only if the paired interval excludes zero: SP+LG$-$LoFTR is $-0.134$ [$-0.173$, $-0.093$] at AUC@10 and $-0.165$ [$-0.212$, $-0.121$] at AUC@5, so we claim LoFTR is more accurate than SP+LG on these pairs.
+
+\section{Limitations and Threats to Validity}
+Only 100 test pairs from two landmarks (30 from 0015, 70 from 0022) are used, so conclusions apply to wide-baseline outdoor landmark photography, not indoor, night or aerial imagery; pairs from one landmark are correlated, so intervals that resample pairs as independent may be somewhat too narrow. The test set is the widest available in MegaDepth-1500 but most pairs lie in a narrow band (tiers 1 and 2 together span $29\dg$--$36\dg$), so we make no claim about larger rotations. Ground-truth poses come from SfM, not a metrology rig, so errors near $1\dg$ are below the reliability of the labels. The learned matchers were trained on MegaDepth data, which favours them over SIFT+MNN. In the LoFTR setup scenes 0015 and 0022 are held out for validation rather than used for training~\cite{loftr}; LightGlue's fine-tuning excludes scenes from the Image Matching Challenge validation and test sets, and we did not verify whether our two landmarks are among them. Poses use OpenCV RANSAC, whereas published numbers used other robust estimators, so absolute AUCs may differ from published values. Pose AUC is one downstream task and does not cover localisation or reconstruction quality. Three off-the-shelf matchers were used as released; none was proposed or retrained.
 
 \section{Conclusion}
-On 100 geometry-selected wide-baseline MegaDepth-1500 pairs (rotation $28.6^\circ$ to $58.0^\circ$), the pose ranking is LoFTR (AUC@10 0.787) $>$ SuperPoint+LightGlue (0.653) $>$ SIFT+MNN (0.069), and every paired difference excludes zero. Match counts do not predict this ranking: SIFT+MNN returns more matches than SP+LG (458 against 364 on average), but only 5\% of them are inliers and its AUC@10 is about a tenth as large. The three matchers show little complementarity: a best-of-three oracle gains 0.028 AUC@10 over LoFTR alone. These conclusions apply to wide-baseline outdoor landmark photography from two landmarks, with OpenCV RANSAC and a narrow rotation range, and the timings are laptop CPU timings.
+On 100 geometry-selected wide-baseline MegaDepth-1500 pairs, the pose ranking is LoFTR (AUC@10 0.787) $>$ SP+LG (0.653) $>$ SIFT+MNN (0.069), and every paired difference excludes zero. Match counts do not predict it: SIFT+MNN returns more matches than SP+LG (458 vs.\ 364) but only 5\% are inliers. The matchers show little complementarity: a best-of-three oracle gains 0.028 AUC@10 over LoFTR alone. These conclusions hold for two landmarks, OpenCV RANSAC and a narrow rotation range.
 
-\section*{Reproducibility}
-The repository contains the pair-selection script and pair lists, frozen configurations, matcher wrappers with pinned versions, pose and AUC code with unit tests, result tables, figure scripts and a README. \texttt{run\_all.sh} regenerates every table and figure from a clean checkout; \texttt{python -m wbm.report} regenerates this report's tables and findings from \texttt{results/summary.json}. The repository is at \url{https://github.com/khushii-vermaa/wide-baseline-matching}.
+\noindent\textbf{Reproducibility.} The repository contains the pair-selection script and pair lists, frozen configs, matcher wrappers with pinned versions, pose and AUC code with unit tests, result tables, figure scripts and a README. \texttt{bash run\_all.sh} regenerates every table and figure from a clean checkout; \texttt{python -m wbm.report} regenerates this report's tables from \texttt{results/summary.json}.
 
-\section*{Contribution statement}
-\todo{Write who did what, truthfully: for example pair selection and harness, matcher wrappers, experiments, analysis, web demo, report writing.}
+\noindent\textbf{Contribution statement.} \emph{Khushi Verma:} geometry-only pair selection and pair lists, the evaluation harness (pose-error and AUC code with unit tests, RANSAC pose stage), the negative controls, the laptop CPU experiments on the 100 test and 200 dev pairs, the Colab 1,500-pair reproduction, and the repository and run scripts. \emph{Kashish Kannojia:} the three matcher wrappers (SIFT+MNN, SP+LG, LoFTR) and their pinned environments, the paired-bootstrap statistics, the analysis arms A--E (counts versus pose, tiers, landmarks, disagreement, sensitivity ablation), the figures and qualitative panels, and the web demo. Both authors wrote and reviewed the report and checked every reported number against the logs.
 
-\section*{AI-assistance declaration}
-AI assistance (Claude, from Anthropic) was used to help draft the code, the web demo and the report text, and to explain methods and debug errors. The authors ran every experiment, and every reported number comes from the authors' own runs.
+\noindent\textbf{AI-assistance declaration.} AI assistance (Claude, from Anthropic) was used to help draft the code, the web demo and the report text, and to explain methods and debug errors. The authors ran every experiment, and every reported number comes from the authors' own runs.
 
-{\small
-\bibliographystyle{unsrt}
-\bibliography{refs}
-}
+{\footnotesize
+\begin{thebibliography}{99}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\bibitem{lowe} D.~G. Lowe. Distinctive image features from scale-invariant keypoints. \emph{IJCV}, 60(2):91--110, 2004.
+\bibitem{superpoint} D.~DeTone, T.~Malisiewicz, A.~Rabinovich. SuperPoint: Self-supervised interest point detection and description. \emph{CVPR Workshops}, 2018.
+\bibitem{superglue} P.-E. Sarlin, D.~DeTone, T.~Malisiewicz, A.~Rabinovich. SuperGlue: Learning feature matching with graph neural networks. \emph{CVPR}, 2020.
+\bibitem{lightglue} P.~Lindenberger, P.-E. Sarlin, M.~Pollefeys. LightGlue: Local feature matching at light speed. \emph{ICCV}, 2023.
+\bibitem{loftr} J.~Sun, Z.~Shen, Y.~Wang, H.~Bao, X.~Zhou. LoFTR: Detector-free local feature matching with transformers. \emph{CVPR}, 2021.
+\bibitem{imc} Y.~Jin, D.~Mishkin, A.~Mishchuk, J.~Matas, P.~Fua, K.~M. Yi, E.~Trulls. Image matching across wide baselines: From paper to practice. \emph{IJCV}, 129:517--547, 2021.
+\bibitem{megadepth} Z.~Li, N.~Snavely. MegaDepth: Learning single-view depth prediction from internet photos. \emph{CVPR}, 2018.
+\bibitem{hz} R.~Hartley, A.~Zisserman. \emph{Multiple View Geometry in Computer Vision}, 2nd ed. Cambridge University Press, 2003.
+\bibitem{nister} D.~Nist\'er. An efficient solution to the five-point relative pose problem. \emph{TPAMI}, 26(6):756--770, 2004.
+\bibitem{ransac} M.~A. Fischler, R.~C. Bolles. Random sample consensus. \emph{Commun.\ ACM}, 24(6):381--395, 1981.
+\bibitem{colmap} J.~L. Sch\"onberger, J.-M. Frahm. Structure-from-motion revisited. \emph{CVPR}, 2016.
+\bibitem{efron} B.~Efron. Bootstrap methods: Another look at the jackknife. \emph{Ann.\ Stat.}, 7(1):1--26, 1979.
+\bibitem{opencv} G.~Bradski. The OpenCV library. \emph{Dr.\ Dobb's Journal of Software Tools}, 2000.
+\bibitem{kornia} E.~Riba, D.~Mishkin, D.~Ponsa, E.~Rublee, G.~Bradski. Kornia: an open source differentiable computer vision library for PyTorch. \emph{WACV}, 2020.
+\end{thebibliography}}
 \end{document}
