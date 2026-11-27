@@ -53,5 +53,5 @@ protocols:
 
 # Published MegaDepth-1500 numbers for Table 2. FILL FROM THE PAPERS; leave null until checked.
 published_auc:
-  loftr: {auc5: null, auc10: null, auc20: null}
-  splg:  {auc5: null, auc10: null, auc20: null}
+  loftr: {auc5: 0.528, auc10: 0.692, auc20: 0.812}
+  splg:  {auc5: 0.499, auc10: 0.670, auc20: 0.801}

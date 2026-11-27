@@ -61,11 +61,11 @@ protocols:
       ransac_thr: 1.0
 published_auc:
   loftr:
-    auc5: null
-    auc10: null
-    auc20: null
+    auc5: 0.528
+    auc10: 0.692
+    auc20: 0.812
   splg:
-    auc5: null
-    auc10: null
-    auc20: null
+    auc5: 0.499
+    auc10: 0.670
+    auc20: 0.801
 tuned_on: dev split; mean AUC@10 over matchers = 0.5335
