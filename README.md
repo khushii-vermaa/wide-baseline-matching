@@ -1,5 +1,5 @@
-# FEATURE MATCHING UNDER EXTREME VIEWPOINT CHANGE -->
-# Does the matcher with the most matches also recover the camera pose? -->
+# FEATURE MATCHING UNDER EXTREME VIEWPOINT CHANGE 
+# Does the matcher with the most matches also recover the camera pose? 
 
 SIFT+MNN vs SuperPoint+LightGlue vs LoFTR on wide-baseline MegaDepth pairs. UCS532 Computer Vision, Sessional Open Challenge 2026 (Project P20).
 Authors: Khushi Verma (1024170065), Kashish Kannojia (1024170342).
