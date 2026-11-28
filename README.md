@@ -93,7 +93,7 @@ results/, logs/         per-pair results, tables, figures, logs
 ```bash
 uvicorn api.main:app --host 127.0.0.1 --port 8000      # open http://localhost:8000
 ```
-Upload two photos, choose a matcher, and see matches (green = consistent with the estimated geometry, red = not), the inlier ratio and the estimated rotation. Without a focal length it guesses 1.2 x long side, so the pose is approximate; the benchmark uses the true MegaDepth intrinsics. LoFTR and LightGlue need their weights cached first, so run the demo once with internet. The "Benchmark results" tab reads `results/summary.json`. The demo is not part of the reported results.
+Upload two photos, choose a matcher, and see matches (green = consistent with the estimated geometry, red = not), the inlier ratio and the estimated rotation. Without a focal length it guesses 1.2 x long side, so the pose is approximate; the benchmark uses the true MegaDepth intrinsics. LoFTR and LightGlue need their weights cached first, so run the demo once with internet. The "Benchmark results" tab reads `results/summary.json`. The demo is not part of the reported results. The demo was tested with Wi-Fi off after the model weights had been cached by one run with internet.
 
 ## Not run
 - The in-plane rotation sweep (Arm F, stretch objective O7) was dropped first, as the proposal's drop order specifies. The code `wbm.rotation_sweep` exists, but no result is reported.
