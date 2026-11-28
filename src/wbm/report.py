@@ -62,7 +62,6 @@ def placeholders(gen):
     write(gen / "table_repro.tex", tabular(["Matcher", "", "AUC@5", "AUC@10", "AUC@20"], [[SHORT[m], s, TBD, TBD, TBD] for m in ("loftr", "splg") for s in ("ours", "paper")]))
     write(gen / "table_sens.tex", tabular(["Setting"] + [SHORT[m] for m in MAIN], [[TBD] + [TBD] * 3]))
     write(gen / "table_ratio.tex", tabular(["Variant", "AUC@5", "AUC@10", "AUC@20"], [["SIFT+MNN", TBD, TBD, TBD], ["SIFT+ratio", TBD, TBD, TBD]]))
-    write(gen / "table_rotation.tex", tabular(["Angle"] + [SHORT[m] for m in MAIN], [[TBD] + [TBD] * 3]))
     write(gen / "table_scene.tex", tabular(["Landmark", "$n$"] + [SHORT[m] for m in MAIN], [[TBD, TBD] + [TBD] * 3]))
     write(gen / "table_seed.tex", tabular(["Matcher", "Seed 0", "Seed 1", "Seed 2"], [[SHORT[m]] + [TBD] * 3 for m in MAIN]))
     write(gen / "findings.tex", "\\todo{Run the experiments, then \\texttt{python -m wbm.report}; this section is generated from \\texttt{results/summary.json}.}\n")
@@ -252,8 +251,6 @@ def make(S, root, cfg, gen):
         df = pd.read_csv(rt)
         rows = [[f"{a:g}{DEG}"] + [n(df[(df.matcher == m) & (df.angle == a)].auc10.mean()) for m in MAIN] for a in sorted(df.angle.unique())]
         write(gen / "table_rotation.tex", tabular(["Rotation"] + [SHORT[m] for m in MAIN], rows))
-    else:
-        write(gen / "table_rotation.tex", tabular(["Angle"] + [SHORT[m] for m in MAIN], [[TBD] * 4]))
 
 
 def main():

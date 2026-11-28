@@ -14,3 +14,4 @@ fastapi==0.165.0
 uvicorn[standard]==0.54.0
 python-multipart==0.0.34
 lightglue @ git+https://github.com/cvg/LightGlue.git@5a650c444718caffc2669dc0094cde908f42dd73
+
