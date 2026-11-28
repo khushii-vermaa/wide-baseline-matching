@@ -10,3 +10,5 @@ report/*.bak
 *.aux
 *.log
 *.out
+
+!logs/*.log

@@ -1,0 +1,19 @@
+== run_all.sh 2026-11-28T05:34:33Z | RANSAC seeds: 0 1 2 ==
+== Analysis, figures, report tables ==
+               matcher  AUC@5  AUC@10  AUC@20  median_err  success_rate  mean_matches  inlier_ratio
+            SIFT + MNN  0.037   0.069   0.123      62.403          0.11        458.43         0.050
+SuperPoint + LightGlue  0.484   0.653   0.778       1.992          0.86        363.60         0.315
+                 LoFTR  0.650   0.787   0.878       1.088          0.95       1333.51         0.505
+paired differences:
+                     a                      b  tau   diff     lo     hi  significant
+            SIFT + MNN SuperPoint + LightGlue    5 -0.448 -0.509 -0.389         True
+            SIFT + MNN SuperPoint + LightGlue   10 -0.583 -0.642 -0.528         True
+            SIFT + MNN                  LoFTR    5 -0.613 -0.667 -0.561         True
+            SIFT + MNN                  LoFTR   10 -0.717 -0.765 -0.669         True
+SuperPoint + LightGlue                  LoFTR    5 -0.165 -0.212 -0.121         True
+SuperPoint + LightGlue                  LoFTR   10 -0.134 -0.173 -0.093         True
+wrote results\summary.json
+report fragments written to report\generated -> cd report && latexmk -pdf main.tex
+run_all.sh: line 40: latexmk: command not found
+latexmk missing: upload report/ to Overleaf
+Done. Main table: results/tables/table1_main.csv
